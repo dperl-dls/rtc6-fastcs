@@ -4,6 +4,8 @@ __pycache__/
 
 # C extensions
 *.so
+# Except our specific one
+!src/rtc6_fastcs/rtc6_bindings/rtc6_bindings.cpython-312-x86_64-linux-gnu.so
 
 # Distribution / packaging
 .Python
@@ -72,4 +74,4 @@ lockfiles/
 
 # RTC6 files
 RTC6*
-RTC6*/*
+RTC6*/
