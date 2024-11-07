@@ -9,4 +9,5 @@
     "[python]": {
         "editor.defaultFormatter": "charliermarsh.ruff",
     },
+    "cmake.sourceDirectory": "/workspaces/rtc6-controller/src/rtc6_fastcs/rtc6_bindings",
 }
