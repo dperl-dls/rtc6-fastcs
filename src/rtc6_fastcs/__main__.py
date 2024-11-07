@@ -1,24 +1,31 @@
-"""Interface for ``python -m rtc6_fastcs``."""
-
-from argparse import ArgumentParser
-from collections.abc import Sequence
+import typer
 
 from . import __version__
 
 __all__ = ["main"]
 
 
-def main(args: Sequence[str] | None = None) -> None:
-    """Argument parser for the CLI."""
-    parser = ArgumentParser()
-    parser.add_argument(
-        "-v",
+app = typer.Typer()
+
+
+def version_callback(value: bool):
+    if value:
+        typer.echo(__version__)
+        raise typer.Exit()
+
+
+@app.callback()
+def main(
+    version: bool | None = typer.Option(
+        None,
         "--version",
-        action="version",
-        version=__version__,
-    )
-    parser.parse_args(args)
+        callback=version_callback,
+        is_eager=True,
+        help="Print the version and exit",
+    ),
+):
+    pass
 
 
 if __name__ == "__main__":
-    main()
+    app()
