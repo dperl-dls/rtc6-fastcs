@@ -11,3 +11,10 @@ def test_add():
 def test_ip_conversion():
     result = bindings.ip_str_to_int("123.0.0.1")
     assert result == 16777339
+    back = bindings.ip_int_to_str(result)
+    assert back == "123.0.0.1"
+
+    result = bindings.ip_str_to_int("123.123.123.123")
+    assert result == 2071690107
+    back = bindings.ip_int_to_str(result)
+    assert back == "123.123.123.123"

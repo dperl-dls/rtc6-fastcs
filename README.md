@@ -7,26 +7,18 @@
 
 FastCS IOC for the ScanLab RTC6 Ethernet laser controller
 
-This is where you should write a short paragraph that describes what your module does,
-how it does it, and why people should use it.
-
 Source          | <https://github.com/dperl-dls/rtc6-fastcs>
 :---:           | :---:
 Docker          | `docker run ghcr.io/dperl-dls/rtc6-fastcs:latest`
 Releases        | <https://github.com/dperl-dls/rtc6-fastcs/releases>
 
-This is where you should put some images or code snippets that illustrate
-some relevant examples. If it is a library then you might put some
-introductory code here:
+# updating the bindings module
 
-```python
-from rtc6_fastcs import __version__
+To update the bindings, in the devcontainer, execute:
 
-print(f"Hello rtc6_fastcs {__version__}")
-```
-
-Or if it is a commandline tool then you might put some example commands here:
-
-```
-python -m rtc6_fastcs --version
+```bash
+cd src/rtc6_fastcs/bindings
+mkdir build && cd build # if necessary
+cmake ..
+make
 ```

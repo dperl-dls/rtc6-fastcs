@@ -6,6 +6,9 @@ FROM python:${PYTHON_VERSION} AS developer
 # Add any system dependencies for the developer/build environment here
 RUN apt-get update && apt-get install -y --no-install-recommends \
     graphviz \
+    build-essential \
+    cmake \
+    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Set up a virtual environment and put it in PATH

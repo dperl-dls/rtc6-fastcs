@@ -7,3 +7,7 @@ def add(a: int, b: int) -> int:
 
 def ip_str_to_int(ip_string: str) -> int:
     return rtc6_bindings.ip_str_to_int(ip_string)
+
+
+def ip_int_to_str(ip: int) -> str:
+    return rtc6_bindings.ip_int_to_str(ip)
