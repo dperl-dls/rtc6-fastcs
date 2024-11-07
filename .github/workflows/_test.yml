@@ -50,6 +50,9 @@ jobs:
           python-version: ${{ inputs.python-version }}
           pip-install: ".[dev]"
 
+      - name: Install library
+        run: bash ./src/rtc6_fastcs/install_library.sh
+      
       - name: Run tests
         run: tox -e tests
 
