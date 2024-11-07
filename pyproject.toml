@@ -30,7 +30,7 @@ dev = [
 ]
 
 [project.scripts]
-rtc6-fastcs = "rtc6_fastcs.__main__:main"
+rtc6-fastcs = "rtc6_fastcs.__main__:app"
 
 [project.urls]
 GitHub = "https://github.com/dperl-dls/rtc6-fastcs"

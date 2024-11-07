@@ -1,3 +1,5 @@
+import subprocess
+
 import typer
 
 from . import __version__
@@ -25,6 +27,13 @@ def main(
     ),
 ):
     pass
+
+
+@app.command()
+def install_library():
+    subprocess.call(
+        ["bash", "/workspaces/rtc6-controller/src/rtc6_fastcs/install_library.sh"]
+    )
 
 
 if __name__ == "__main__":

@@ -69,3 +69,7 @@ lockfiles/
 
 # ruff cache
 .ruff_cache/
+
+# RTC6 files
+RTC6*
+RTC6*/*
