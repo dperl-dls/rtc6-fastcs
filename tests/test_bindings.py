@@ -36,3 +36,10 @@ def test_exception():
         bindings.throw_rtc_error(exception_text)
 
     assert e.value.args[0] == exception_text
+
+
+@pytest.mark.needs_librtc6
+def test_connect():
+    from rtc6_fastcs.bindings import rtc6_bindings as bindings
+
+    bindings.connect("123.123.123.123", "/foo/bar.dat", "/foo/bar.dat")

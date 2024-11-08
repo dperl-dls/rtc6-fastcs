@@ -27,7 +27,7 @@ def close() -> None:
     close the open connection, if any
     """
 
-def connect(ip_string: str) -> None:
+def connect(ip_string: str, program_file_path: str, correction_file_path: str) -> None:
     """
     connect to the eth-box at the given IP
     """
