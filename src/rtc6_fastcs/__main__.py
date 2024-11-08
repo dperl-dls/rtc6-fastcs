@@ -1,4 +1,5 @@
 import subprocess
+from functools import cache
 from pathlib import Path
 
 import typer
@@ -43,6 +44,13 @@ def install_library():
 def ioc(
     pv_prefix: str = typer.Argument("RTC6ETH", help="Name of the IOC"),
     box_ip: str = typer.Argument("172.23.17.192", help="IP Address of the RTC6 ethbox"),
+    program_file: str = typer.Argument(
+        "./rtc6_files/program_files", help="Path to the RTC6 program files"
+    ),
+    correction_file: str = typer.Argument(
+        "./rtc6_files/correction_files/Cor_1to1.ct5",
+        help="Path to the RTC6 correction file",
+    ),
     output_path: Path = typer.Option(  # noqa: B008
         Path.cwd(),  # noqa: B008
         help="folder of local service definition",
@@ -59,13 +67,18 @@ def ioc(
     """
     from fastcs.backends.epics.backend import EpicsBackend, EpicsGUIOptions
 
-    backend = EpicsBackend(get_controller(box_ip), pv_prefix)
+    backend = EpicsBackend(
+        get_controller(box_ip, program_file, correction_file), pv_prefix
+    )
     backend.create_gui(EpicsGUIOptions(output_path / "index.bob"))
     backend.run()
 
 
-def get_controller(box_ip: str) -> RtcController:
-    return RtcController(box_ip)
+@cache
+def get_controller(
+    box_ip: str, program_file: str, correction_file: str
+) -> RtcController:
+    return RtcController(box_ip, program_file, correction_file)
 
 
 if __name__ == "__main__":
