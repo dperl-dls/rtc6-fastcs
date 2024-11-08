@@ -24,3 +24,15 @@ def test_ip_conversion():
     assert result == 2071690107
     back = bindings.ip_int_to_str(result)
     assert back == "123.123.123.123"
+
+
+@pytest.mark.needs_librtc6
+def test_exception():
+    from rtc6_fastcs.bindings import rtc6_bindings as bindings
+
+    exception_text = "abc123"
+
+    with pytest.raises(bindings.RtcError) as e:
+        bindings.throw_rtc_error(exception_text)
+
+    assert e.value.args[0] == exception_text
