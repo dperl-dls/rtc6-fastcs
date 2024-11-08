@@ -10,9 +10,9 @@ int add(int i, int j)
     return i + j;
 }
 
-int ip_str_to_int(const char *str)
+int ip_str_to_int(const char *ipStr)
 {
-    return eth_convert_string_to_ip(str);
+    return eth_convert_string_to_ip(ipStr);
 }
 
 std::string ip_int_to_str(int ip)
@@ -21,6 +21,14 @@ std::string ip_int_to_str(int ip)
     auto out_ptr = reinterpret_cast<std::uintptr_t>(&out);
     eth_convert_ip_to_string(ip, out_ptr);
     return out;
+}
+
+void connect(const char *ipStr)
+{
+}
+
+void close_connection()
+{
 }
 
 PYBIND11_MODULE(rtc6_bindings, m)
@@ -32,4 +40,8 @@ PYBIND11_MODULE(rtc6_bindings, m)
     m.def("ip_str_to_int", &ip_str_to_int, "convert IP address from string to int", py::arg("ip_string"));
 
     m.def("ip_int_to_str", &ip_int_to_str, "convert IP address from int to string", py::arg("ip_int"));
+
+    m.def("connect", &connect, "connect to the eth-box at the given IP", py::arg("ip_string"));
+
+    m.def("close", &close_connection, "close the open connection, if any");
 }

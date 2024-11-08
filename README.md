@@ -26,3 +26,7 @@ cd ../../../..
 pybind11-stubgen rtc6_fastcs.bindings.rtc6_bindings -o src
 ruff format .
 ```
+
+# using devcontainer on RH7
+
+manually build the container with ``
