@@ -18,9 +18,11 @@ To update the bindings, in the devcontainer and with the virtual env activated, 
 
 ```bash
 cd src/rtc6_fastcs/bindings
-mkdir build && cd build # if necessary
+mkdir build # if necessary
+cd build
 cmake ..
 make
-cd ../../..
+cd ../../../..
 pybind11-stubgen rtc6_fastcs.bindings.rtc6_bindings -o src
+ruff format .
 ```
