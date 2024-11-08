@@ -55,6 +55,9 @@ addopts = """
 # https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
 filterwarnings = "error"
 # Doctest python code in docs, python code in src docstrings, test functions in tests
+markers = [
+    "needs_librtc6: marks tests as requiring the proprietary library (deselect with '-m \"not needs_librtc6\"')",
+]
 testpaths = "docs src tests"
 
 [tool.coverage.run]
@@ -82,7 +85,7 @@ allowlist_externals =
 commands =
     pre-commit: pre-commit run --all-files --show-diff-on-failure {posargs}
     type-checking: pyright src tests {posargs}
-    tests: pytest --cov=rtc6_fastcs --cov-report term --cov-report xml:cov.xml {posargs}
+    tests: pytest -m "not needs_librtc6" --cov=rtc6_fastcs --cov-report term --cov-report xml:cov.xml {posargs}
 """
 
 [tool.ruff]

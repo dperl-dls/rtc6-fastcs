@@ -1,6 +1,9 @@
+import pytest
+
 from rtc6_fastcs import bindings
 
 
+@pytest.mark.needs_librtc6
 def test_add():
     sum = bindings.add(4, 5)
     assert sum == 9
@@ -8,6 +11,7 @@ def test_add():
     assert sum == 20
 
 
+@pytest.mark.needs_librtc6
 def test_ip_conversion():
     result = bindings.ip_str_to_int("123.0.0.1")
     assert result == 16777339
