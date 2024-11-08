@@ -21,6 +21,8 @@ dev = [
     "copier",
     "pipdeptree",
     "pre-commit",
+    "pybind11",
+    "pybind11-stubgen",
     "pyright",
     "pytest",
     "pytest-cov",

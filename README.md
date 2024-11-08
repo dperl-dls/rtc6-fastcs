@@ -14,11 +14,13 @@ Releases        | <https://github.com/dperl-dls/rtc6-fastcs/releases>
 
 # updating the bindings module
 
-To update the bindings, in the devcontainer, execute:
+To update the bindings, in the devcontainer and with the virtual env activated, execute:
 
 ```bash
 cd src/rtc6_fastcs/bindings
 mkdir build && cd build # if necessary
 cmake ..
 make
+cd ../../..
+pybind11-stubgen rtc6_fastcs.bindings.rtc6_bindings -o src
 ```
