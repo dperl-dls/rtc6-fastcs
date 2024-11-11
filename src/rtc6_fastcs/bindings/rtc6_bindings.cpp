@@ -1,9 +1,12 @@
 #include <pybind11/pybind11.h>
-#include "/usr/include/scanlab/rtc6.h"
 #include <cstdint>
 #include <string>
 
+#include "scanlab/rtc6.h"
+#include "boost/format.hpp"
+
 namespace py = pybind11;
+using boost::format;
 
 // Bindings from the rtc6 DLL to python
 // This should simplify some functions where possible,
@@ -58,14 +61,14 @@ void init_dll()
         }
         else
         {
-            throw rtc_error("Initialisation of the RTC6 library failed with error code: " + std::to_string(initLib));
+            throw rtc_error(str(format("Initialisation of the RTC6 library failed with error code: %1%") % initLib));
         }
     }
 }
 
 std::string failed_text(std::string task, int card, int errorcode)
 {
-    return task + " for card " + std::to_string(card) + " failed with error code: " + std::to_string(errorcode);
+    return str(format("%1% for card %2%  failed with error code: %3%") % task % card % errorcode);
 }
 
 int load_program_and_correction_files(uint card, char *programFilePath, char *correctionFilePath)
@@ -101,7 +104,7 @@ void connect(const char *ipStr, char *programFilePath, char *correctionFilePath)
     int result = select_rtc(cardNo);
     if (result != cardNo)
     {
-        throw rtc_error("select_rtc failed with error: " + std::to_string(result) + ". Most likely, a card was not found at the given IP address.");
+        throw rtc_error(str(format("select_rtc for card %1% failed with error: %2%. Most likely, a card was not found at the given IP address: %3%.") % cardNo % result % ipStr));
     }
     auto serialNum = load_program_and_correction_files(cardNo, programFilePath, correctionFilePath);
 }

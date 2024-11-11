@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
     python3-dev \
+    libboost-all-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Set up a virtual environment and put it in PATH

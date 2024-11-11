@@ -5,7 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/venv/lib/python3.12/site-packages/pybind11/include/",
-                "/usr/include/python3.11"
+                "/usr/include/python3.11",
+                "/usr/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
