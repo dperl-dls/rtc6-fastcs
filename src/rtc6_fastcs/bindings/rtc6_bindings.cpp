@@ -12,12 +12,16 @@ using boost::format;
 // This should simplify some functions where possible,
 // but not hold state, since that is more the job of the IOC
 
-// Custom exception allows us to catch RtcError in python-land
+// Custom exceptions allow us to catch RtcError and derivatives in python-land
 // Examples for use of the RTC6 library often involve returning int error codes,
 // here we interrogate replace those with exceptions to be more pythonic
 class rtc_error : public std::runtime_error
 {
     using std::runtime_error::runtime_error;
+};
+class rtc_connection_error : public rtc_error
+{
+    using rtc_error::rtc_error;
 };
 
 // RTC error codes
@@ -95,11 +99,21 @@ int load_program_and_correction_files(uint card, char *programFilePath, char *co
 }
 
 // Real functions which we expect to use and expose
+void check_conection()
+{
+    const int connection = eth_check_connection();
+    if (!connection) // 1 if connection OK
+    {
+        throw rtc_connection_error("Checking connection to the eth box failed!");
+    }
+}
+
 void connect(const char *ipStr, char *programFilePath, char *correctionFilePath)
 {
     init_dll();
 
     // The library allows for connecting to multiple cards, but we just use one
+    // See manual page 855 for info about the conversion of IP address to an int
     int cardNo = eth_assign_card_ip(eth_convert_string_to_ip(ipStr), 0);
     int result = select_rtc(cardNo);
     if (result != cardNo)
@@ -107,6 +121,7 @@ void connect(const char *ipStr, char *programFilePath, char *correctionFilePath)
         throw rtc_error(str(format("select_rtc for card %1% failed with error: %2%. Most likely, a card was not found at the given IP address: %3%.") % cardNo % result % ipStr));
     }
     auto serialNum = load_program_and_correction_files(cardNo, programFilePath, correctionFilePath);
+    check_conection();
 }
 
 void close_connection()
@@ -118,8 +133,10 @@ PYBIND11_MODULE(rtc6_bindings, m)
 {
     m.doc() = "bindings for the scanlab rtc6 ethernet laser controller"; // optional module docstring
     py::register_exception<rtc_error>(m, "RtcError");
+    py::register_exception<rtc_connection_error>(m, "RtcConnectionError");
 
     // Real functions which are intended to be used
+    m.def("check_connection", &check_conection, "check the active connection to the eth box: throws RtcConnectionError on failure, otherwise does nothing.");
     m.def("connect", &connect, "connect to the eth-box at the given IP", py::arg("ip_string"), py::arg("program_file_path"), py::arg("correction_file_path"));
     m.def("close", &close_connection, "close the open connection, if any");
 

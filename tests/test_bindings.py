@@ -39,6 +39,16 @@ def test_exception():
 
 
 @pytest.mark.needs_librtc6
+def test_connection_exception():
+    from rtc6_fastcs.bindings import rtc6_bindings as bindings
+
+    with pytest.raises(bindings.RtcConnectionError) as e:
+        bindings.check_connection()
+
+    assert "connection to the eth box failed" in e.value.args[0]
+
+
+@pytest.mark.needs_librtc6
 def test_connect():
     from rtc6_fastcs.bindings import rtc6_bindings as bindings
 
