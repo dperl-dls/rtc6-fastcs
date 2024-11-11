@@ -5,13 +5,24 @@
 
 namespace py = pybind11;
 
+// Bindings from the rtc6 DLL to python
+// This should simplify some functions where possible,
+// but not hold state, since that is more the job of the IOC
+
+// Custom exception allows us to catch RtcError in python-land
+// Examples for use of the RTC6 library often involve returning int error codes,
+// here we interrogate replace those with exceptions to be more pythonic
 class rtc_error : public std::runtime_error
 {
     using std::runtime_error::runtime_error;
 };
 
-// Utilities for testing - TODO remove when things are working
+// RTC error codes
+const uint ERROR_NO_ERROR = 0U;
+const uint ERROR_NO_CARD = 1U;
+const uint ERROR_VERSION_MISMATCH = 256U;
 
+// Utilities for testing - TODO remove when things are working
 int add(int i, int j)
 {
     return i + j;
@@ -35,13 +46,7 @@ std::string ip_int_to_str(int ip)
     return out;
 }
 
-// RTC error codes
-const uint ERROR_NO_ERROR = 0U;
-const uint ERROR_NO_CARD = 1U;
-const uint ERROR_VERSION_MISMATCH = 256U;
-
-// Utilities for internal use
-
+// Utilities for internal use - TODO probably move these to a separate file
 void init_dll()
 {
     const auto initLib = init_rtc6_dll();
@@ -87,7 +92,6 @@ int load_program_and_correction_files(uint card, char *programFilePath, char *co
 }
 
 // Real functions which we expect to use and expose
-
 void connect(const char *ipStr, char *programFilePath, char *correctionFilePath)
 {
     init_dll();
@@ -97,7 +101,7 @@ void connect(const char *ipStr, char *programFilePath, char *correctionFilePath)
     int result = select_rtc(cardNo);
     if (result != cardNo)
     {
-        throw rtc_error("select_rtc failed with error: " + std::to_string(result) + ". Most likely, a card was not found at the given IP.");
+        throw rtc_error("select_rtc failed with error: " + std::to_string(result) + ". Most likely, a card was not found at the given IP address.");
     }
     auto serialNum = load_program_and_correction_files(cardNo, programFilePath, correctionFilePath);
 }
@@ -106,6 +110,7 @@ void close_connection()
 {
 }
 
+// Definition of our exposed python module - things must be registered here to be accessible
 PYBIND11_MODULE(rtc6_bindings, m)
 {
     m.doc() = "bindings for the scanlab rtc6 ethernet laser controller"; // optional module docstring
