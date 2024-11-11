@@ -45,7 +45,8 @@ int ip_str_to_int(const char *ipStr)
     return eth_convert_string_to_ip(ipStr);
 }
 
-std::string ip_int_to_str(int ip)
+// Utilities for internal use - TODO probably move these to a separate file
+std::string ip_int_to_str(int ip) // remove this one from exposed functions
 {
     char out[] = "123.123.123.123";
     auto out_ptr = reinterpret_cast<std::uintptr_t>(&out);
@@ -53,7 +54,6 @@ std::string ip_int_to_str(int ip)
     return out;
 }
 
-// Utilities for internal use - TODO probably move these to a separate file
 void init_dll()
 {
     const auto initLib = init_rtc6_dll();
@@ -124,8 +124,43 @@ void connect(const char *ipStr, char *programFilePath, char *correctionFilePath)
     check_conection();
 }
 
+struct CardInfo
+{
+    // Holder for card info from the manual page 354
+public:
+    CardInfo(const int32_t infoArray[])
+    {
+        firmwareVersion = infoArray[0];
+        serialNumber = infoArray[1];
+        ipStr = ip_int_to_str(infoArray[8]);
+        isAcquired = (infoArray[5] == 1);
+    };
+    int getFirmwareVersion() { return firmwareVersion; };
+    int getSerialNumber() { return serialNumber; };
+    std::string getIpStr() { return ipStr; };
+    bool getIsAcquired() { return isAcquired; };
+    int firmwareVersion;
+    int serialNumber;
+    std::string ipStr;
+    bool isAcquired;
+};
+
+CardInfo get_card_info()
+{
+    check_conection();
+    int32_t out[16];
+    auto out_ptr = reinterpret_cast<std::uintptr_t>(&out);
+    eth_get_card_info(1, out_ptr);
+    return CardInfo(out);
+}
+
 void close_connection()
 {
+    int releasedCard = release_rtc(1);
+    if (!releasedCard)
+    {
+        throw rtc_connection_error("Could not release card - maybe it was not acquired?");
+    }
 }
 
 // Definition of our exposed python module - things must be registered here to be accessible
@@ -135,10 +170,19 @@ PYBIND11_MODULE(rtc6_bindings, m)
     py::register_exception<rtc_error>(m, "RtcError");
     py::register_exception<rtc_connection_error>(m, "RtcConnectionError");
 
+    // Structs
+    py::class_<CardInfo>(m, "CardInfo")
+        .def_property("firmware_version", &CardInfo::getFirmwareVersion, nullptr)
+        .def_property("serial_number", &CardInfo::getSerialNumber, nullptr)
+        .def_property("ip_address", &CardInfo::getIpStr, nullptr)
+        .def_property("is_acquired", &CardInfo::getIsAcquired, nullptr);
+
     // Real functions which are intended to be used
     m.def("check_connection", &check_conection, "check the active connection to the eth box: throws RtcConnectionError on failure, otherwise does nothing.");
     m.def("connect", &connect, "connect to the eth-box at the given IP", py::arg("ip_string"), py::arg("program_file_path"), py::arg("correction_file_path"));
     m.def("close", &close_connection, "close the open connection, if any");
+    m.def("close_again", &close_connection, "close the open connection, if any");
+    m.def("get_card_info", &get_card_info, "get info for the connected card; throws RtcConnectionError on failure");
 
     // Just for testing - TODO remove these when things are going
     m.def("add", &add, "A function that adds two numbers", py::arg("i"), py::arg("j"));

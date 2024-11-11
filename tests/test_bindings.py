@@ -52,4 +52,22 @@ def test_connection_exception():
 def test_connect():
     from rtc6_fastcs.bindings import rtc6_bindings as bindings
 
-    bindings.connect("172.23.17.192", "./rtc6_files/program_files", "./rtc6_files/correction_files/Cor_1to1.ct5")
+    bindings.connect(
+        "172.23.17.192",
+        "./rtc6_files/program_files",
+        "./rtc6_files/correction_files/Cor_1to1.ct5",
+    )
+
+
+@pytest.mark.needs_librtc6
+def test_card_info():
+    from rtc6_fastcs.bindings import rtc6_bindings as bindings
+
+    info = bindings.get_card_info()
+
+
+@pytest.mark.needs_librtc6
+def test_close():
+    from rtc6_fastcs.bindings import rtc6_bindings as bindings
+
+    info = bindings.close()
