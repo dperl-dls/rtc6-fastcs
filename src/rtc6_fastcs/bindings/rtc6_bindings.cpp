@@ -137,6 +137,11 @@ void check_conection()
     }
 }
 
+std::string get_error_string()
+{
+    return parse_error(get_error());
+}
+
 int connect(const char *ipStr, char *programFilePath, char *correctionFilePath)
 {
     init_dll();
@@ -261,6 +266,7 @@ PYBIND11_MODULE(rtc6_bindings, m)
     m.def("get_card_info", &get_card_info, "get info for the connected card; throws RtcConnectionError on failure");
     m.def("init_list_loading", &init_list_loading, "initialise the given list (1 or 2)");
     m.def("get_list_statuses", &get_list_statuses, "get the statuses of the command lists");
+    m.def("get_error_string", &get_error_string, "get human-readable error info");
 
     // Taken directly from the library, might need to be updated with better typing, enums etc.
     m.def("get_last_error", &get_last_error, "get the last error for an ethernet command");

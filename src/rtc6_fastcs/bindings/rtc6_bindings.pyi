@@ -19,6 +19,7 @@ __all__ = [
     "get_card_info",
     "get_config_list",
     "get_error",
+    "get_error_string",
     "get_input_pointer",
     "get_io_status",
     "get_last_error",
@@ -143,6 +144,11 @@ def get_config_list() -> None:
 def get_error() -> int:
     """
     ---
+    """
+
+def get_error_string() -> str:
+    """
+    get human-readable error info
     """
 
 def get_input_pointer() -> int:
