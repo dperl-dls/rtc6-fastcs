@@ -108,20 +108,19 @@ void check_conection()
     }
 }
 
-void connect(const char *ipStr, char *programFilePath, char *correctionFilePath)
+int connect(const char *ipStr, char *programFilePath, char *correctionFilePath)
 {
     init_dll();
 
     // The library allows for connecting to multiple cards, but we just use one
     // See manual page 855 for info about the conversion of IP address to an int
     int cardNo = eth_assign_card_ip(eth_convert_string_to_ip(ipStr), 0);
-    int result = select_rtc(cardNo);
+    int result = acquire_rtc(cardNo);
     if (result != cardNo)
     {
-        throw rtc_error(str(format("select_rtc for card %1% failed with error: %2%. Most likely, a card was not found at the given IP address: %3%.") % cardNo % result % ipStr));
+        throw rtc_error(str(format("acquire_rtc for card %1% failed with error: %2%. Most likely, a card was not found at the given IP address: %3%.") % cardNo % result % ipStr));
     }
-    auto serialNum = load_program_and_correction_files(cardNo, programFilePath, correctionFilePath);
-    check_conection();
+    return load_program_and_correction_files(cardNo, programFilePath, correctionFilePath);
 }
 
 struct CardInfo
@@ -139,6 +138,8 @@ public:
     int getSerialNumber() { return serialNumber; };
     std::string getIpStr() { return ipStr; };
     bool getIsAcquired() { return isAcquired; };
+
+private:
     int firmwareVersion;
     int serialNumber;
     std::string ipStr;
@@ -147,15 +148,21 @@ public:
 
 CardInfo get_card_info()
 {
-    check_conection();
+    // check_conection(); // not working ?
     int32_t out[16];
     auto out_ptr = reinterpret_cast<std::uintptr_t>(&out);
     eth_get_card_info(1, out_ptr);
     return CardInfo(out);
 }
 
+int get_last_eth_error()
+{
+    return eth_get_last_error();
+}
+
 void close_connection()
 {
+    // TODO: check if there is anything to release
     int releasedCard = release_rtc(1);
     if (!releasedCard)
     {
@@ -183,6 +190,7 @@ PYBIND11_MODULE(rtc6_bindings, m)
     m.def("close", &close_connection, "close the open connection, if any");
     m.def("close_again", &close_connection, "close the open connection, if any");
     m.def("get_card_info", &get_card_info, "get info for the connected card; throws RtcConnectionError on failure");
+    m.def("get_last_error", &get_last_eth_error, "get the last error for an ethernet command");
 
     // Just for testing - TODO remove these when things are going
     m.def("add", &add, "A function that adds two numbers", py::arg("i"), py::arg("j"));

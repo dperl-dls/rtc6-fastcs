@@ -14,6 +14,7 @@ __all__ = [
     "close_again",
     "connect",
     "get_card_info",
+    "get_last_error",
     "ip_int_to_str",
     "ip_str_to_int",
     "throw_rtc_error",
@@ -57,7 +58,7 @@ def close_again() -> None:
     close the open connection, if any
     """
 
-def connect(ip_string: str, program_file_path: str, correction_file_path: str) -> None:
+def connect(ip_string: str, program_file_path: str, correction_file_path: str) -> int:
     """
     connect to the eth-box at the given IP
     """
@@ -65,6 +66,11 @@ def connect(ip_string: str, program_file_path: str, correction_file_path: str) -
 def get_card_info() -> CardInfo:
     """
     get info for the connected card; throws RtcConnectionError on failure
+    """
+
+def get_last_error() -> int:
+    """
+    get the last error for an ethernet command
     """
 
 def ip_int_to_str(ip_int: int) -> str:

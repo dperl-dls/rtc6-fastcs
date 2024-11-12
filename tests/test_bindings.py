@@ -52,22 +52,50 @@ def test_connection_exception():
 def test_connect():
     from rtc6_fastcs.bindings import rtc6_bindings as bindings
 
-    bindings.connect(
+    serial = bindings.connect(
         "172.23.17.192",
         "./rtc6_files/program_files",
         "./rtc6_files/correction_files/Cor_1to1.ct5",
     )
+
+    assert serial != 0
 
 
 @pytest.mark.needs_librtc6
 def test_card_info():
     from rtc6_fastcs.bindings import rtc6_bindings as bindings
 
+    bindings.connect(
+        "172.23.17.192",
+        "./rtc6_files/program_files",
+        "./rtc6_files/correction_files/Cor_1to1.ct5",
+    )
+
     info = bindings.get_card_info()
+    assert info.firmware_version
+    assert info.is_acquired
 
 
 @pytest.mark.needs_librtc6
 def test_close():
     from rtc6_fastcs.bindings import rtc6_bindings as bindings
 
-    info = bindings.close()
+    _ = bindings.close()
+
+
+@pytest.mark.needs_librtc6
+def test_get_error():
+    from rtc6_fastcs.bindings import rtc6_bindings as bindings
+
+    try:
+        bindings.connect(
+            "172.23.17.192",
+            "./rtc6_files/program_files",
+            "./rtc6_files/correction_files/Cor_1to1.ct5",
+        )
+    except:
+        ...
+
+    last_error = bindings.get_last_error()
+    bit_list = output = [int(x) for x in "{:032b}".format(last_error)]
+    assert bit_list[19]
