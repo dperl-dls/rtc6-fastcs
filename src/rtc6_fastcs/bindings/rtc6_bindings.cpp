@@ -4,6 +4,7 @@
 
 #include "scanlab/rtc6.h"
 #include "boost/format.hpp"
+#include <bitset>
 
 namespace py = pybind11;
 using boost::format;
@@ -15,17 +16,17 @@ using boost::format;
 // Custom exceptions allow us to catch RtcError and derivatives in python-land
 // Examples for use of the RTC6 library often involve returning int error codes,
 // here we interrogate replace those with exceptions to be more pythonic
-class rtc_error : public std::runtime_error
+class RtcError : public std::runtime_error
 {
     using std::runtime_error::runtime_error;
 };
-class rtc_connection_error : public rtc_error
+class RtcConnectionError : public RtcError
 {
-    using rtc_error::rtc_error;
+    using RtcError::RtcError;
 };
-class rtc_list_error : public rtc_error
+class RtcListError : public RtcError
 {
-    using rtc_error::rtc_error;
+    using RtcError::RtcError;
 };
 
 // RTC error codes
@@ -41,7 +42,7 @@ int add(int i, int j)
 
 int throw_rtc_error(const char *errorText)
 {
-    throw rtc_error(errorText);
+    throw RtcError(errorText);
 }
 
 int ip_str_to_int(const char *ipStr)
@@ -69,7 +70,7 @@ void init_dll()
         }
         else
         {
-            throw rtc_error(str(format("Initialisation of the RTC6 library failed with error code: %1%") % initLib));
+            throw RtcError(str(format("Initialisation of the RTC6 library failed with error code: %1%") % initLib));
         }
     }
 }
@@ -83,25 +84,44 @@ std::string failed_text(std::string task, int card, int errorCode, int pageNo)
     return str(format("%1% for card %2%  failed with error code: %3%. Details about this error can be found on page %4% of the manual.") % task % card % errorCode % pageNo);
 }
 
+std::string parse_error(int errorCode)
+{
+    std::string out = "";
+    std::bitset<32> errorBits(errorCode);
+    if (errorBits[0])
+    {
+        out += "No board found. ";
+    }
+    if (errorBits[1])
+    {
+        out += "Access denied. Could indicate wrong program files. ";
+    }
+    if (errorBits[2])
+    {
+        out += "Command not forwarded. ";
+    }
+    return out;
+}
+
 int load_program_and_correction_files(uint card, char *programFilePath, char *correctionFilePath)
 { // DAT, ETH/OUT and RBF need to be in the current working directory
     const auto loadProgram = n_load_program_file(card, programFilePath);
     // TODO: improve error messages for specific errors.
     if (loadProgram != ERROR_NO_ERROR)
     {
-        throw rtc_error(failed_text("n_load_program_file", card, loadProgram, 489));
+        throw RtcError(failed_text("n_load_program_file", card, loadProgram, 489));
     }
     // Acquire board for further access
     const auto acquire = acquire_rtc(card);
     if (acquire != card)
     {
-        throw rtc_error(failed_text("acquire_rtc", card, loadProgram));
+        throw RtcError(failed_text("acquire_rtc", card, loadProgram));
     }
     // Load 2D correction file as table 1
     const auto loadCorrection = n_load_correction_file(card, correctionFilePath, 1, 2);
     if (loadCorrection != ERROR_NO_ERROR)
     {
-        throw rtc_error(failed_text("n_load_correction_file", card, loadCorrection, 474));
+        throw RtcError(failed_text("n_load_correction_file", card, loadCorrection, 474));
     }
     // select_cor_table( 1, 0 ); is done internally. Call select_cor_table, if you want a different setting.
     return n_get_serial_number(card);
@@ -113,7 +133,7 @@ void check_conection()
     const int connection = eth_check_connection();
     if (!connection) // 1 if connection OK
     {
-        throw rtc_connection_error("Checking connection to the eth box failed!");
+        throw RtcConnectionError(str(format("Checking connection to the eth box failed! Result of check: %1%") % connection));
     }
 }
 
@@ -124,12 +144,18 @@ int connect(const char *ipStr, char *programFilePath, char *correctionFilePath)
     // The library allows for connecting to multiple cards, but we just use one
     // See manual page 855 for info about the conversion of IP address to an int
     int cardNo = eth_assign_card_ip(eth_convert_string_to_ip(ipStr), 0);
-    int result = acquire_rtc(cardNo);
-    if (result != cardNo)
+    int result = select_rtc(cardNo);
+    int error = get_error();
+    if (result != cardNo || error != 0)
     {
-        throw rtc_error(str(format("acquire_rtc for card %1% failed with error: %2%. Most likely, a card was not found at the given IP address: %3%. Alternatively, it may already be acquired by another process.") % cardNo % result % ipStr));
+        throw RtcError(str(format("select_rtc for card %1% failed with error: %2%. Most likely, a card was not found at the given IP address: %3%. Alternatively, it may already be acquired by another process. Error code: %4%") % cardNo % result % ipStr % error));
     }
     return load_program_and_correction_files(cardNo, programFilePath, correctionFilePath);
+    error = get_error();
+    if (error)
+    {
+        throw RtcError(str(format("Error loading program files: %1%") % parse_error(error)));
+    }
 }
 
 struct CardInfo
@@ -164,18 +190,9 @@ CardInfo get_card_info()
     return CardInfo(out);
 }
 
-int get_last_eth_error()
-{
-    return eth_get_last_error();
-}
-
 void init_list_loading(int listNo)
 {
-    const int result = load_list(listNo, 0);
-    if (result != listNo)
-    {
-        throw rtc_list_error(str(format("Initialising list %1% failed with result %2%! Perhaps this list is busy?") % listNo % result));
-    }
+    set_start_list(listNo);
 }
 enum ListStatus
 {
@@ -191,10 +208,10 @@ enum ListStatus
 py::list get_list_statuses()
 {
     py::list result;
-    int statuses = read_status();
+    std::bitset<32> statuses(read_status());
     for (int status = 0; status != 8; status++)
     {
-        if (1)
+        if (statuses[status])
         {
             result.append(static_cast<ListStatus>(status));
         }
@@ -208,7 +225,7 @@ void close_connection()
     int releasedCard = release_rtc(1);
     if (!releasedCard)
     {
-        throw rtc_connection_error("Could not release card - maybe it was not acquired?");
+        throw RtcConnectionError("Could not release card - maybe it was not acquired?");
     }
 }
 
@@ -216,9 +233,9 @@ void close_connection()
 PYBIND11_MODULE(rtc6_bindings, m)
 {
     m.doc() = "bindings for the scanlab rtc6 ethernet laser controller"; // optional module docstring
-    py::register_exception<rtc_error>(m, "RtcError");
-    py::register_exception<rtc_connection_error>(m, "RtcConnectionError");
-    py::register_exception<rtc_list_error>(m, "RtcListError");
+    py::register_exception<RtcError>(m, "RtcError");
+    py::register_exception<RtcConnectionError>(m, "RtcConnectionError");
+    py::register_exception<RtcListError>(m, "RtcListError");
 
     // Structs
     py::class_<CardInfo>(m, "CardInfo")
@@ -241,11 +258,24 @@ PYBIND11_MODULE(rtc6_bindings, m)
     m.def("check_connection", &check_conection, "check the active connection to the eth box: throws RtcConnectionError on failure, otherwise does nothing.");
     m.def("connect", &connect, "connect to the eth-box at the given IP", py::arg("ip_string"), py::arg("program_file_path"), py::arg("correction_file_path"));
     m.def("close", &close_connection, "close the open connection, if any");
-    m.def("close_again", &close_connection, "close the open connection, if any");
     m.def("get_card_info", &get_card_info, "get info for the connected card; throws RtcConnectionError on failure");
-    m.def("get_last_error", &get_last_eth_error, "get the last error for an ethernet command");
-    m.def("init_list_loading", &init_list_loading, "initialise the given list (1 or 2)", py::arg("list_no"));
+    m.def("init_list_loading", &init_list_loading, "initialise the given list (1 or 2)");
     m.def("get_list_statuses", &get_list_statuses, "get the statuses of the command lists");
+
+    // Taken directly from the library, might need to be updated with better typing, enums etc.
+    m.def("get_last_error", &get_last_error, "get the last error for an ethernet command");
+    m.def("set_laser_mode", &set_laser_mode, "set the mode of the laser, see p645", py::arg("mode"));
+    m.def("set_laser_control", &set_laser_control, "set the control settings of the laser, see p641", py::arg("settings"));
+    m.def("get_input_pointer", &get_input_pointer, "get the pointer of list input");
+    m.def("config_list_memory", &config_list, "set the memory for each position list, see p330", py::arg("list_1_mem"), py::arg("list_2_mem"));
+    m.def("load_list", &load_list, "set the pointer to load at position of list_no, see p330", py::arg("list_no"), py::arg("position"));
+
+    m.def("get_io_status", &get_io_status, "---");
+    m.def("get_list_space", &get_list_space, "---");
+    m.def("get_config_list", &get_config_list, "---");
+    m.def("get_error", &get_error, "---");
+    m.def("get_rtc_mode", &get_rtc_mode, "---");
+    m.def("get_temperature", &get_temperature, "---");
 
     // Just for testing - TODO remove these when things are going
     m.def("add", &add, "A function that adds two numbers", py::arg("i"), py::arg("j"));

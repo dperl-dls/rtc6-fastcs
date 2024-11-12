@@ -3,7 +3,6 @@ bindings for the scanlab rtc6 ethernet laser controller
 """
 
 from __future__ import annotations
-
 import typing
 
 __all__ = [
@@ -15,14 +14,24 @@ __all__ = [
     "add",
     "check_connection",
     "close",
-    "close_again",
+    "config_list_memory",
     "connect",
     "get_card_info",
+    "get_config_list",
+    "get_error",
+    "get_input_pointer",
+    "get_io_status",
     "get_last_error",
+    "get_list_space",
     "get_list_statuses",
+    "get_rtc_mode",
+    "get_temperature",
     "init_list_loading",
     "ip_int_to_str",
     "ip_str_to_int",
+    "load_list",
+    "set_laser_control",
+    "set_laser_mode",
     "throw_rtc_error",
 ]
 
@@ -111,9 +120,9 @@ def close() -> None:
     close the open connection, if any
     """
 
-def close_again() -> None:
+def config_list_memory(list_1_mem: int, list_2_mem: int) -> None:
     """
-    close the open connection, if any
+    set the memory for each position list, see p330
     """
 
 def connect(ip_string: str, program_file_path: str, correction_file_path: str) -> int:
@@ -126,9 +135,34 @@ def get_card_info() -> CardInfo:
     get info for the connected card; throws RtcConnectionError on failure
     """
 
+def get_config_list() -> None:
+    """
+    ---
+    """
+
+def get_error() -> int:
+    """
+    ---
+    """
+
+def get_input_pointer() -> int:
+    """
+    get the pointer of list input
+    """
+
+def get_io_status() -> int:
+    """
+    ---
+    """
+
 def get_last_error() -> int:
     """
     get the last error for an ethernet command
+    """
+
+def get_list_space() -> int:
+    """
+    ---
     """
 
 def get_list_statuses() -> list:
@@ -136,7 +170,17 @@ def get_list_statuses() -> list:
     get the statuses of the command lists
     """
 
-def init_list_loading(list_no: int) -> None:
+def get_rtc_mode() -> int:
+    """
+    ---
+    """
+
+def get_temperature() -> float:
+    """
+    ---
+    """
+
+def init_list_loading(arg0: int) -> None:
     """
     initialise the given list (1 or 2)
     """
@@ -149,6 +193,21 @@ def ip_int_to_str(ip_int: int) -> str:
 def ip_str_to_int(ip_string: str) -> int:
     """
     convert IP address from string to int
+    """
+
+def load_list(list_no: int, position: int) -> int:
+    """
+    set the pointer to load at position of list_no, see p330
+    """
+
+def set_laser_control(settings: int) -> None:
+    """
+    set the control settings of the laser, see p641
+    """
+
+def set_laser_mode(mode: int) -> None:
+    """
+    set the mode of the laser, see p645
     """
 
 def throw_rtc_error(error_text: str) -> int:
