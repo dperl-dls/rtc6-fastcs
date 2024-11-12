@@ -93,9 +93,9 @@ def test_get_error():
             "./rtc6_files/program_files",
             "./rtc6_files/correction_files/Cor_1to1.ct5",
         )
-    except:
+    except:  # noqa
         ...
 
     last_error = bindings.get_last_error()
-    bit_list = output = [int(x) for x in "{:032b}".format(last_error)]
+    bit_list = [int(x) for x in f"{last_error:032b}"]
     assert bit_list[19]

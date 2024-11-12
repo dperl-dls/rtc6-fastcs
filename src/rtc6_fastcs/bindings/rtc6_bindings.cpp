@@ -118,7 +118,7 @@ int connect(const char *ipStr, char *programFilePath, char *correctionFilePath)
     int result = acquire_rtc(cardNo);
     if (result != cardNo)
     {
-        throw rtc_error(str(format("acquire_rtc for card %1% failed with error: %2%. Most likely, a card was not found at the given IP address: %3%.") % cardNo % result % ipStr));
+        throw rtc_error(str(format("acquire_rtc for card %1% failed with error: %2%. Most likely, a card was not found at the given IP address: %3%. Alternatively, it may already be acquired by another process.") % cardNo % result % ipStr));
     }
     return load_program_and_correction_files(cardNo, programFilePath, correctionFilePath);
 }
