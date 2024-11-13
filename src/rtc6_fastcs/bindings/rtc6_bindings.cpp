@@ -266,6 +266,7 @@ PYBIND11_MODULE(rtc6_bindings, m)
     m.def("get_card_info", &get_card_info, "get info for the connected card; throws RtcConnectionError on failure");
     m.def("init_list_loading", &init_list_loading, "initialise the given list (1 or 2)");
     m.def("get_list_statuses", &get_list_statuses, "get the statuses of the command lists");
+    m.def("get_error", &get_error, "get the current error code. 0 is no error. table of errors is on p387, get_error_string() can be called for a human-readable version.");
     m.def("get_error_string", &get_error_string, "get human-readable error info");
 
     // Taken directly from the library, might need to be updated with better typing, enums etc.
@@ -279,7 +280,6 @@ PYBIND11_MODULE(rtc6_bindings, m)
     m.def("get_io_status", &get_io_status, "---");
     m.def("get_list_space", &get_list_space, "---");
     m.def("get_config_list", &get_config_list, "---");
-    m.def("get_error", &get_error, "---");
     m.def("get_rtc_mode", &get_rtc_mode, "---");
     m.def("get_temperature", &get_temperature, "---");
 
