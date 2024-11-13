@@ -141,6 +141,8 @@ int load_program_and_correction_files(uint card, char *programFilePath, char *co
 }
 
 // Real functions which we expect to use and expose
+void clear_all_errors() { reset_error(-1); }
+
 void check_conection()
 {
     const int connection = eth_check_connection();
@@ -160,18 +162,17 @@ std::string get_error_string()
 int connect(const char *ipStr, char *programFilePath, char *correctionFilePath)
 {
     init_dll();
-
     // The library allows for connecting to multiple cards, but we just use one
     // See manual page 855 for info about the conversion of IP address to an int
     int cardNo = eth_assign_card_ip(eth_convert_string_to_ip(ipStr), 0);
     int result = select_rtc(cardNo);
-    int error = get_error();
-    if (result != cardNo || error != 0)
+    if (result != cardNo)
     {
-        throw RtcError(str(format("select_rtc for card %1% failed with error: %2%. Most likely, a card was not found at the given IP address: %3%. Alternatively, it may already be acquired by another process. Error code: %4%. Description: %5%") % cardNo % result % ipStr % error % parse_error(error)));
+        const int error = get_error();
+        throw RtcError(str(format("select_rtc for card %1% failed with result: %2%. Most likely, a card was not found at the given IP address: %3%. Alternatively, it may already be acquired by another process. Error code: %4%. Description: %5%") % cardNo % result % ipStr % error % parse_error(error)));
     }
     return load_program_and_correction_files(cardNo, programFilePath, correctionFilePath);
-    error = get_error();
+    const int error = get_error();
     if (error)
     {
         throw RtcError(str(format("Error loading program files: %1%") % parse_error(error)));
@@ -248,8 +249,6 @@ void close_connection()
         throw RtcConnectionError("Could not release card - maybe it was not acquired?");
     }
 }
-
-void clear_all_errors() { reset_error(-1); }
 
 // Definition of our exposed python module - things must be registered here to be accessible
 PYBIND11_MODULE(rtc6_bindings, m)
