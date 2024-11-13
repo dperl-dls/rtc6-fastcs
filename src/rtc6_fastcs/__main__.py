@@ -1,6 +1,7 @@
 import subprocess
 from functools import cache
 from pathlib import Path
+from typing import Annotated
 
 import typer
 
@@ -10,7 +11,7 @@ from . import __version__
 
 __all__ = ["main"]
 
-
+CWD_AT_LOADING = Path.cwd()
 app = typer.Typer()
 
 
@@ -42,29 +43,37 @@ def install_library():
 
 @app.command()
 def ioc(
-    pv_prefix: str = typer.Argument("RTC6ETH", help="Name of the IOC"),
-    box_ip: str = typer.Argument("172.23.17.192", help="IP Address of the RTC6 ethbox"),
-    program_file_dir: str = typer.Argument(
-        "./rtc6_files/program_files", help="Path to the RTC6 program files"
-    ),
-    correction_file: str = typer.Argument(
-        "./rtc6_files/correction_files/Cor_1to1.ct5",
-        help="Path to the RTC6 correction file",
-    ),
-    retry_connect: bool = typer.Option(
-        False,
-        help="Retry connecting to the RTC6 if the initial attempt fails",
-    ),
-    output_path: Path = typer.Option(  # noqa: B008
-        Path.cwd(),  # noqa: B008
-        help="folder of local service definition",
-        exists=True,
-        file_okay=False,
-        dir_okay=True,
-        writable=False,
-        readable=True,
-        resolve_path=True,
-    ),
+    pv_prefix: Annotated[str, typer.Argument(help="Name of the IOC")] = "RTC6ETH",
+    box_ip: Annotated[
+        str, typer.Argument(help="IP Address of the RTC6 ethbox")
+    ] = "172.23.17.192",
+    program_file_dir: Annotated[
+        str, typer.Argument(help="Path to the directory of the RTC6 program files")
+    ] = "./rtc6_files/program_files",
+    correction_file: Annotated[
+        str,
+        typer.Argument(
+            help="Path to the RTC6 correction file",
+        ),
+    ] = "./rtc6_files/correction_files/Cor_1to1.ct5",
+    retry_connect: Annotated[
+        bool,
+        typer.Option(
+            help="Retry connecting to the RTC6 if the initial attempt fails",
+        ),
+    ] = False,
+    output_path: Annotated[
+        Path,
+        typer.Option(
+            help="folder of local service definition",
+            exists=True,
+            file_okay=False,
+            dir_okay=True,
+            writable=False,
+            readable=True,
+            resolve_path=True,
+        ),
+    ] = CWD_AT_LOADING,
 ):
     """
     Start up the service
