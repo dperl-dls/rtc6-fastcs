@@ -5,6 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Debug running IOC",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "rtc6_fastcs",
+            "args": [
+                "ioc"
+            ],
+            "justMyCode": false
+        },
+        {
             "name": "Debug Unit Test",
             "type": "debugpy",
             "request": "launch",

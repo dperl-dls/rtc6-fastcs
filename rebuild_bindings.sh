@@ -3,6 +3,7 @@
 cd src/rtc6_fastcs/bindings
 mkdir -p build # if necessary
 cd build
+rm CMakeCache.txt
 cmake ..
 make
 cd ../../../..

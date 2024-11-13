@@ -3,6 +3,7 @@ import asyncio
 from fastcs.attributes import AttrR, AttrW
 from fastcs.controller import Controller, SubController
 from fastcs.datatypes import Bool, Float, Int, String
+from fastcs.wrappers import command
 
 from rtc6_fastcs.controller.rtc_connection import RtcConnection
 
@@ -30,32 +31,51 @@ class RtcInfoController(ConnectedSubController):
 
 
 class RtcControlSettings(ConnectedSubController):
-    # laser_mode = AttrR(String(), group="LaserControl") should be an enum - do with allowed_values=
+    # Page 645 of the manual
+    laser_mode = AttrW(
+        Int(),
+        group="LaserControl",  # allowed_values=[0, 1, 2, 3, 4, 5, 6]
+    )
     jump_speed = AttrW(Float(), group="LaserControl")  # set_jump_speed_ctrl
     mark_speed = AttrW(Float(), group="LaserControl")  # set_mark_speed_ctrl
     # set_scanner_delays(jump, mark, polygon) in 10us increments
     jump_delay = AttrW(Int(), group="LaserControl")
     mark_delay = AttrW(Int(), group="LaserControl")
     polygon_delay = AttrW(Int(), group="LaserControl")
-    sky_writing_mode = AttrW(Int(), group="LaserControl")  # set_sky_writing_mode
+    sky_writing_mode = AttrW(
+        Int(),
+        group="LaserControl",  # allowed_values=[0, 1, 2, 3]
+    )  # set_sky_writing_mode
 
 
 class RtcListOperations(ConnectedSubController):
-    class AddJump(ConnectedSubController):
-        x = AttrW(Int(), group="LaserControl")
-        y = AttrW(Int(), group="LaserControl")
-
-    class AddArc(ConnectedSubController):
-        x = AttrW(Int(), group="LaserControl")
-        y = AttrW(Int(), group="LaserControl")
-        angle = AttrW(Float(), group="LaserControl")
-
-    class AddLine(ConnectedSubController):
-        x = AttrW(Int(), group="LaserControl")
-        y = AttrW(Int(), group="LaserControl")
+    list_pointer_position = AttrR(Int(), group="ListInfo")
 
     def __init__(self, conn: RtcConnection) -> None:
         super().__init__(conn)
+
+    class AddJump(ConnectedSubController):
+        x = AttrW(Int(), group="ListOps")
+        y = AttrW(Int(), group="ListOps")
+
+        @command(group="ListOps")
+        async def proc(self):
+            await asyncio.sleep(0)
+
+    class AddArc(ConnectedSubController):
+        x = AttrW(Int(), group="ListOps")
+        y = AttrW(Int(), group="ListOps")
+        angle = AttrW(Float(), group="ListOps")
+
+        @command()
+        async def proc(self): ...
+
+    class AddLine(ConnectedSubController):
+        x = AttrW(Int(), group="ListOps")
+        y = AttrW(Int(), group="ListOps")
+
+        @command()
+        async def proc(self): ...
 
 
 class RtcController(Controller):

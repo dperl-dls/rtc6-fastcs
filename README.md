@@ -36,3 +36,7 @@ and run it with `podman run -it --net=host --security-opt=label=disable --mount=
 then connect vscode to the laser lab workstation with `remote:ssh` and attach to the running container from the `remote:containers` view
 the first time for a running container you will need to install the relevant extensions, run `pip install -e .[dev]`, and `rtc6-fastcs install-library` or the `install-library.sh` script from the repo
 when everything is set up, `test_connect()` from `test_bindings.py` should pass
+
+# notes
+
+- fastcs doesn't completely work for python 3.12 but fails silently so this project will need to be moved to 3.11

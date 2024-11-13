@@ -78,12 +78,17 @@ def ioc(
     """
     Start up the service
     """
-    from fastcs.backends.epics.backend import EpicsBackend, EpicsGUIOptions
+    from fastcs.backends.epics.backend import (
+        EpicsBackend,
+        EpicsDocsOptions,
+        EpicsGUIOptions,
+    )
 
     backend = EpicsBackend(
         get_controller(box_ip, program_file_dir, correction_file, retry_connect),
         pv_prefix,
     )
+    backend.create_docs(EpicsDocsOptions(output_path / "index.md"))
     backend.create_gui(EpicsGUIOptions(output_path / "index.bob"))
     backend.run()
 
