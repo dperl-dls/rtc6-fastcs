@@ -28,9 +28,17 @@ class RtcInfoController(SubController):
 
 
 class RtcController(Controller):
-    def __init__(self, box_ip: str, program_file: str, correction_file: str) -> None:
+    def __init__(
+        self,
+        box_ip: str,
+        program_file_dir: str,
+        correction_file: str,
+        retry_connect: bool = False,
+    ) -> None:
         super().__init__()
-        self._conn = RtcConnection(box_ip, program_file, correction_file)
+        self._conn = RtcConnection(
+            box_ip, program_file_dir, correction_file, retry_connect
+        )
         self._info_controller = RtcInfoController(self._conn)
         self.register_sub_controller("INFO", self._info_controller)
 

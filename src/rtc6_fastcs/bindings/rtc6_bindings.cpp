@@ -133,7 +133,9 @@ void check_conection()
     const int connection = eth_check_connection();
     if (!connection) // 1 if connection OK
     {
-        throw RtcConnectionError(str(format("Checking connection to the eth box failed! Result of check: %1%") % connection));
+        const int error = get_error();
+        const std::string errorString = parse_error(get_error());
+        throw RtcConnectionError(str(format("Checking connection to the eth box failed! Result of check: %1%. Error %2%: %3%") % connection % error % errorString));
     }
 }
 
@@ -188,7 +190,7 @@ private:
 
 CardInfo get_card_info()
 {
-    // check_conection(); // not working ?
+    check_conection();
     int32_t out[16];
     auto out_ptr = reinterpret_cast<std::uintptr_t>(&out);
     eth_get_card_info(1, out_ptr);
@@ -234,6 +236,8 @@ void close_connection()
     }
 }
 
+void clear_all_errors() { reset_error(-1); }
+
 // Definition of our exposed python module - things must be registered here to be accessible
 PYBIND11_MODULE(rtc6_bindings, m)
 {
@@ -260,7 +264,7 @@ PYBIND11_MODULE(rtc6_bindings, m)
         .value("USED2", ListStatus::USED2);
 
     // Real functions which are intended to be used
-    m.def("check_connection", &check_conection, "check the active connection to the eth box: throws RtcConnectionError on failure, otherwise does nothing.");
+    m.def("check_connection", &check_conection, "check the active connection to the eth box: throws RtcConnectionError on failure, otherwise does nothing. If it fails, errors must be cleared afterwards.");
     m.def("connect", &connect, "connect to the eth-box at the given IP", py::arg("ip_string"), py::arg("program_file_path"), py::arg("correction_file_path"));
     m.def("close", &close_connection, "close the open connection, if any");
     m.def("get_card_info", &get_card_info, "get info for the connected card; throws RtcConnectionError on failure");
@@ -268,6 +272,7 @@ PYBIND11_MODULE(rtc6_bindings, m)
     m.def("get_list_statuses", &get_list_statuses, "get the statuses of the command lists");
     m.def("get_error", &get_error, "get the current error code. 0 is no error. table of errors is on p387, get_error_string() can be called for a human-readable version.");
     m.def("get_error_string", &get_error_string, "get human-readable error info");
+    m.def("clear_errors", &clear_all_errors, "clear errors in the RTC6 library");
 
     // Taken directly from the library, might need to be updated with better typing, enums etc.
     m.def("get_last_error", &get_last_error, "get the last error for an ethernet command");

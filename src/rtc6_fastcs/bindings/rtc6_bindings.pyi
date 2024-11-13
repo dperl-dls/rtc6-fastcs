@@ -13,6 +13,7 @@ __all__ = [
     "RtcListError",
     "add",
     "check_connection",
+    "clear_errors",
     "close",
     "config_list_memory",
     "connect",
@@ -113,7 +114,12 @@ def add(i: int, j: int) -> int:
 
 def check_connection() -> None:
     """
-    check the active connection to the eth box: throws RtcConnectionError on failure, otherwise does nothing.
+    check the active connection to the eth box: throws RtcConnectionError on failure, otherwise does nothing. If it fails, errors must be cleared afterwards.
+    """
+
+def clear_errors() -> None:
+    """
+    clear errors in the RTC6 library
     """
 
 def close() -> None:
@@ -143,7 +149,7 @@ def get_config_list() -> None:
 
 def get_error() -> int:
     """
-    ---
+    get the current error code. 0 is no error. table of errors is on p387, get_error_string() can be called for a human-readable version.
     """
 
 def get_error_string() -> str:
