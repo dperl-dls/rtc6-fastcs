@@ -88,18 +88,31 @@ std::string parse_error(int errorCode)
 {
     std::string out = "";
     std::bitset<32> errorBits(errorCode);
-    if (errorBits[0])
+    std::string errorStrings[32] = {
+        "No board found",                                           // 0
+        "Access denied. Could indicate wrong program files. ",      // 1
+        "Command not forwarded. ",                                  // 2
+        "No response from board. ",                                 // 3
+        "Invalid parameter. ",                                      // 4
+        "Busy: list processing in wrong state for command. ",       // 5
+        "List command rejected: invalid input pointer. ",           // 6
+        "Ignored: list command converted to nop. ",                 // 7
+        "Version mismatch error. ",                                 // 8
+        "Download verification error. ",                            // 9
+        "PCIe command sent to Eth board or vice-versa. ",           // 10
+        "Windows memory request failed. ",                          // 11
+        "Download error. The values have possibly not been saved.", // 12
+        "General ethernet error",                                   // 13
+        "",                                                         // 14: Reserved
+        "Unsupported Windows version. ",                            // 15
+    };
+    for (int i = 0; i != 32; i++)
     {
-        out += "No board found. ";
-    }
-    if (errorBits[1])
-    {
-        out += "Access denied. Could indicate wrong program files. ";
-    }
-    if (errorBits[2])
-    {
-        out += "Command not forwarded. ";
-    }
+        if (errorBits[i])
+        {
+            out += errorStrings[i];
+        }
+    };
     return out;
 }
 
@@ -155,7 +168,7 @@ int connect(const char *ipStr, char *programFilePath, char *correctionFilePath)
     int error = get_error();
     if (result != cardNo || error != 0)
     {
-        throw RtcError(str(format("select_rtc for card %1% failed with error: %2%. Most likely, a card was not found at the given IP address: %3%. Alternatively, it may already be acquired by another process. Error code: %4%") % cardNo % result % ipStr % error));
+        throw RtcError(str(format("select_rtc for card %1% failed with error: %2%. Most likely, a card was not found at the given IP address: %3%. Alternatively, it may already be acquired by another process. Error code: %4%. Description: %5%") % cardNo % result % ipStr % error % parse_error(error)));
     }
     return load_program_and_correction_files(cardNo, programFilePath, correctionFilePath);
     error = get_error();

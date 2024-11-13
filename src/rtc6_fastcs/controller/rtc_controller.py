@@ -1,8 +1,8 @@
 import asyncio
 
-from fastcs.attributes import AttrR
+from fastcs.attributes import AttrR, AttrW
 from fastcs.controller import Controller, SubController
-from fastcs.datatypes import Bool, Int, String
+from fastcs.datatypes import Bool, Float, Int, String
 
 from rtc6_fastcs.controller.rtc_connection import RtcConnection
 
@@ -27,6 +27,21 @@ class RtcInfoController(SubController):
         self._conn = conn
 
 
+class RtcControlSettings(SubController):
+    # laser_mode = AttrR(Float(), group="Information") should be an enum
+    jump_speed = AttrW(Float(), group="LaserControl")  # set_jump_speed_ctrl
+    mark_speed = AttrW(Float(), group="LaserControl")  # set_mark_speed_ctrl
+    # set_scanner_delays(jump, mark, polygon) in 10us increments
+    jump_delay = AttrW(Int(), group="LaserControl")
+    mark_delay = AttrW(Int(), group="LaserControl")
+    polygon_delay = AttrW(Int(), group="LaserControl")
+    sky_writing_mode = AttrW(Int(), group="LaserControl")  # set_sky_writing_mode
+
+    def __init__(self, conn: RtcConnection) -> None:
+        super().__init__()
+        self._conn = conn
+
+
 class RtcController(Controller):
     def __init__(
         self,
@@ -41,6 +56,7 @@ class RtcController(Controller):
         )
         self._info_controller = RtcInfoController(self._conn)
         self.register_sub_controller("INFO", self._info_controller)
+        self.register_sub_controller("CONTROL", RtcControlSettings(self._conn))
 
     async def connect(self) -> None:
         await self._conn.connect()

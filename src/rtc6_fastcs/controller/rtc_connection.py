@@ -1,6 +1,9 @@
 import asyncio
+import logging
 
 from rtc6_fastcs.bindings.rtc6_bindings import CardInfo, RtcError
+
+LOGGER = logging.getLogger(__name__)
 
 
 class RtcConnection:
@@ -35,6 +38,7 @@ class RtcConnection:
             except RtcError as e:
                 if not self._retry_connect:
                     raise Exception("Not retrying failed connection") from e
+                LOGGER.warning(f"Connection failed: {e.args[0]}! Retrying...")
                 await asyncio.sleep(1)
 
     async def close(self) -> None:
