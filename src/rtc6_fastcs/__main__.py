@@ -37,7 +37,7 @@ def main(
 @app.command()
 def install_library():
     subprocess.call(
-        ["bash", "/workspaces/rtc6-controller/src/rtc6_fastcs/install_library.sh"]
+        ["bash", "/workspace/rtc6-controller/src/rtc6_fastcs/install_library.sh"]
     )
 
 
