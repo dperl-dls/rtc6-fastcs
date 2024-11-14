@@ -28,6 +28,9 @@ class RtcConnection:
     def get_card_info(self) -> CardInfo:
         return self._bindings.get_card_info()
 
+    def get_bindings(self):
+        return self._bindings
+
     async def connect(self) -> None:
         connected = 0
         while not connected:

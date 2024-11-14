@@ -3,6 +3,7 @@ bindings for the scanlab rtc6 ethernet laser controller
 """
 
 from __future__ import annotations
+
 import typing
 
 __all__ = [

@@ -286,6 +286,10 @@ PYBIND11_MODULE(rtc6_bindings, m)
     m.def("get_error_string", &get_error_string, "get human-readable error info");
     m.def("clear_errors", &clear_all_errors, "clear errors in the RTC6 library");
 
+    m.def("add_arc_to", &arc_abs, py::arg("x"), py::arg("y"), py::arg("angle"));
+    m.def("add_jump_to", &jump_abs, py::arg("x"), py::arg("y"));
+    m.def("add_line_to", &mark_abs, py::arg("x"), py::arg("y"));
+
     // Taken directly from the library, might need to be updated with better typing, enums etc.
     m.def("get_last_error", &get_last_error, "get the last error for an ethernet command");
     m.def("set_laser_mode", &set_laser_mode, "set the mode of the laser, see p645", py::arg("mode"));

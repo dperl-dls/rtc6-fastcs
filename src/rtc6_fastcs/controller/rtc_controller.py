@@ -60,7 +60,7 @@ class RtcListOperations(ConnectedSubController):
 
         @command(group="ListOps")
         async def proc(self):
-            await asyncio.sleep(0)
+            self._conn.get_bindings()
 
     class AddArc(ConnectedSubController):
         x = AttrW(Int(), group="ListOps")

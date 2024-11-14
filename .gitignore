@@ -5,7 +5,7 @@ __pycache__/
 # C extensions
 *.so
 # Except our specific one
-!src/rtc6_fastcs/bindings/rtc6_bindings.cpython-312-x86_64-linux-gnu.so
+!src/rtc6_fastcs/bindings/rtc6_bindings.cpython-311-x86_64-linux-gnu.so
 
 # Distribution / packaging
 .Python
