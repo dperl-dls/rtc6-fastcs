@@ -3,7 +3,6 @@ bindings for the scanlab rtc6 ethernet laser controller
 """
 
 from __future__ import annotations
-
 import typing
 
 __all__ = [
@@ -13,6 +12,9 @@ __all__ = [
     "RtcError",
     "RtcListError",
     "add",
+    "add_arc_to",
+    "add_jump_to",
+    "add_line_to",
     "check_connection",
     "clear_errors",
     "close",
@@ -113,6 +115,9 @@ def add(i: int, j: int) -> int:
     A function that adds two numbers
     """
 
+def add_arc_to(x: int, y: int, angle: float) -> None: ...
+def add_jump_to(x: int, y: int) -> None: ...
+def add_line_to(x: int, y: int) -> None: ...
 def check_connection() -> None:
     """
     check the active connection to the eth box: throws RtcConnectionError on failure, otherwise does nothing. If it fails, errors must be cleared afterwards.

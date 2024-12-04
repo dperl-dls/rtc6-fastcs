@@ -298,6 +298,13 @@ PYBIND11_MODULE(rtc6_bindings, m)
     m.def("config_list_memory", &config_list, "set the memory for each position list, see p330", py::arg("list_1_mem"), py::arg("list_2_mem"));
     m.def("load_list", &load_list, "set the pointer to load at position of list_no, see p330", py::arg("list_no"), py::arg("position"));
 
+    // simple control commands
+    m.def("set_mark_speed_ctrl", &set_mark_speed_ctrl, "set the speed for marks", py::arg("speed"));
+    m.def("set_mark_speed_ctrl", &set_mark_speed_ctrl, "set the speed for marks", py::arg("speed"));
+    m.def("set_mark_speed_ctrl", &set_mark_speed_ctrl, "set the speed for marks", py::arg("speed"));
+    m.def("set_mark_speed_ctrl", &set_mark_speed_ctrl, "set the speed for marks", py::arg("speed"));
+    m.def("set_mark_speed_ctrl", &set_mark_speed_ctrl, "set the speed for marks", py::arg("speed"));
+
     m.def("get_io_status", &get_io_status, "---");
     m.def("get_list_space", &get_list_space, "---");
     m.def("get_config_list", &get_config_list, "---");

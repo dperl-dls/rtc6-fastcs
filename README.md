@@ -35,7 +35,15 @@ manually build the container with `podman build -t rtc6-fastcs-dev --target=deve
 and run it with `podman run -it --net=host --security-opt=label=disable --mount=type=bind,source=/scratch/ziq44869/rtc6-fastcs/,destination=/workspace rtc6-fastcs-dev`
 then connect vscode to the laser lab workstation with `remote:ssh` and attach to the running container from the `remote:containers` view
 the first time for a running container you will need to install the relevant extensions, run `pip install -e .[dev]`, and `rtc6-fastcs install-library` or the `install-library.sh` script from the repo
-when everything is set up, `test_connect()` from `test_bindings.py` should pass
+when everything is set up, `test_connect()` from `test_bindings.py` should pass, and `./rebuild_bindings.sh` should execute cleanly
+
+you may need/want to add the following to the C++ extension include path for better IDE support:
+```
+${workspaceFolder}/**
+/venv/lib/python3.11/site-packages/pybind11/include/
+/usr/include/python3.11
+/usr/include
+```
 
 # notes
 

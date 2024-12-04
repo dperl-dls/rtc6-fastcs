@@ -1,10 +1,15 @@
 import asyncio
+from collections.abc import Callable
+from dataclasses import dataclass
+from enum import StrEnum, auto
+from typing import Any
 
-from fastcs.attributes import AttrR, AttrW
+from fastcs.attributes import AttrR, AttrW, AttrRW, Sender
 from fastcs.controller import Controller, SubController
 from fastcs.datatypes import Bool, Float, Int, String
 from fastcs.wrappers import command
 
+from py import process
 from rtc6_fastcs.controller.rtc_connection import RtcConnection
 
 
@@ -12,6 +17,12 @@ class ConnectedSubController(SubController):
     def __init__(self, conn: RtcConnection) -> None:
         super().__init__()
         self._conn = conn
+
+    def binding_execute(self, cmd: str, *args: tuple, **kwargs: dict[str, Any]):
+        binding_command = self._conn.get_bindings.__getattribute__(cmd)
+        if not isinstance(binding_command, Callable):
+            raise TypeError(f"Command {cmd} is not an executable RTC6 binding!")
+        binding_command(*args, **kwargs)
 
 
 class RtcInfoController(ConnectedSubController):
@@ -30,52 +41,87 @@ class RtcInfoController(ConnectedSubController):
         )
 
 
+
+
 class RtcControlSettings(ConnectedSubController):
+
+    class LaserMode(StrEnum):
+        CO2 = auto()
+        YAG1 = auto()
+        YAG2 = auto()
+        YAG3 = auto()
+        LASER4 = auto()
+        YAG5 = auto()
+        LASER = auto()
+
+    @dataclass
+    class ControlSettingsHandler(Sender):
+        cmd: str
+
+        async def put(self, controller: ConnectedSubController, attr: AttrW, value: Any):
+            controller.binding_execute(self.cmd, value)
+
     # Page 645 of the manual
     laser_mode = AttrW(
-        Int(),
-        group="LaserControl",  # allowed_values=[0, 1, 2, 3, 4, 5, 6]
+        String(),
+        group="LaserControl",
+        allowed_values=[str(v).upper() for v in list(LaserMode)],
+        handler=ControlSettingsHandler("set_laser_mode"),
     )
-    jump_speed = AttrW(Float(), group="LaserControl")  # set_jump_speed_ctrl
-    mark_speed = AttrW(Float(), group="LaserControl")  # set_mark_speed_ctrl
+    jump_speed = AttrW(
+        Float(),
+        group="LaserControl",
+        handler=ControlSettingsHandler("set_jump_speed_ctrl"),
+    )  # set_jump_speed_ctrl
+    mark_speed = AttrW(
+        Float(),
+        group="LaserControl",
+        handler=ControlSettingsHandler("set_mark_speed_ctrl"),
+    )  # set_mark_speed_ctrl
     # set_scanner_delays(jump, mark, polygon) in 10us increments
-    jump_delay = AttrW(Int(), group="LaserControl")
-    mark_delay = AttrW(Int(), group="LaserControl")
-    polygon_delay = AttrW(Int(), group="LaserControl")
+    jump_delay = AttrW(Int(), group="LaserControl",
+        handler=ControlSettingsHandler("n_set_scanner_delays_ctrl"))
+    mark_delay = AttrW(Int(), group="LaserControl",
+        handler=ControlSettingsHandler("n_set_scanner_delays_ctrl"))
+    polygon_delay = AttrW(Int(), group="LaserControl",
+        handler=ControlSettingsHandler("n_set_scanner_delays_ctrl"))
     sky_writing_mode = AttrW(
         Int(),
-        group="LaserControl",  # allowed_values=[0, 1, 2, 3]
-    )  # set_sky_writing_mode
+        group="LaserControl",
+        handler=ControlSettingsHandler("set_sky_writing_mode")
+    )
 
 
 class RtcListOperations(ConnectedSubController):
     list_pointer_position = AttrR(Int(), group="ListInfo")
 
-    def __init__(self, conn: RtcConnection) -> None:
-        super().__init__(conn)
-
     class AddJump(ConnectedSubController):
-        x = AttrW(Int(), group="ListOps")
-        y = AttrW(Int(), group="ListOps")
+        x = AttrRW(Int(), group="ListOps")
+        y = AttrRW(Int(), group="ListOps")
 
         @command(group="ListOps")
         async def proc(self):
-            self._conn.get_bindings()
+            bindings = self._conn.get_bindings()
+            bindings.add_jump_to(self.x.get(), self.y.get())
 
     class AddArc(ConnectedSubController):
-        x = AttrW(Int(), group="ListOps")
-        y = AttrW(Int(), group="ListOps")
-        angle = AttrW(Float(), group="ListOps")
+        x = AttrRW(Int(), group="ListOps")
+        y = AttrRW(Int(), group="ListOps")
+        angle = AttrRW(Float(), group="ListOps")
 
         @command()
-        async def proc(self): ...
+        async def proc(self):
+            bindings = self._conn.get_bindings()
+            bindings.add_arc_to(self.x.get(), self.y.get(), self.angle.get())
 
     class AddLine(ConnectedSubController):
-        x = AttrW(Int(), group="ListOps")
-        y = AttrW(Int(), group="ListOps")
+        x = AttrRW(Int(), group="ListOps")
+        y = AttrRW(Int(), group="ListOps")
 
         @command()
-        async def proc(self): ...
+        async def proc(self):
+            bindings = self._conn.get_bindings()
+            bindings.add_line_to(self.x.get(), self.y.get())
 
 
 class RtcController(Controller):

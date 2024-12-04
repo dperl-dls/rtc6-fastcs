@@ -9,7 +9,7 @@
     "[python]": {
         "editor.defaultFormatter": "charliermarsh.ruff",
     },
-    "cmake.sourceDirectory": "/workspace/rtc6-controller/src/rtc6_fastcs/bindings",
+    "cmake.sourceDirectory": "/workspace/src/rtc6_fastcs/bindings",
     "files.associations": {
         "array": "cpp",
         "atomic": "cpp",
