@@ -64,7 +64,18 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "cinttypes": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "bitset": "cpp",
+        "condition_variable": "cpp",
+        "forward_list": "cpp",
+        "unordered_set": "cpp",
+        "optional": "cpp",
+        "ratio": "cpp",
+        "mutex": "cpp",
+        "semaphore": "cpp",
+        "stop_token": "cpp",
+        "thread": "cpp",
+        "typeindex": "cpp"
     },
     "C_Cpp.errorSquiggles": "enabled",
 }

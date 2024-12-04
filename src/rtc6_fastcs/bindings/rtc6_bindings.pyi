@@ -7,6 +7,7 @@ import typing
 
 __all__ = [
     "CardInfo",
+    "LaserMode",
     "ListStatus",
     "RtcConnectionError",
     "RtcError",
@@ -35,8 +36,12 @@ __all__ = [
     "ip_int_to_str",
     "ip_str_to_int",
     "load_list",
+    "set_jump_speed_ctrl",
     "set_laser_control",
     "set_laser_mode",
+    "set_mark_speed_ctrl",
+    "set_scanner_delays",
+    "set_sky_writing_mode",
     "throw_rtc_error",
 ]
 
@@ -51,6 +56,52 @@ class CardInfo:
     def is_acquired(self) -> bool: ...
     @property
     def serial_number(self) -> int: ...
+
+class LaserMode:
+    """
+    Members:
+
+      CO2
+
+      YAG1
+
+      YAG2
+
+      YAG3
+
+      LASER4
+
+      YAG5
+
+      LASER6
+    """
+
+    CO2: typing.ClassVar[LaserMode]  # value = <LaserMode.CO2: 0>
+    LASER4: typing.ClassVar[LaserMode]  # value = <LaserMode.LASER4: 4>
+    LASER6: typing.ClassVar[LaserMode]  # value = <LaserMode.LASER6: 6>
+    YAG1: typing.ClassVar[LaserMode]  # value = <LaserMode.YAG1: 1>
+    YAG2: typing.ClassVar[LaserMode]  # value = <LaserMode.YAG2: 2>
+    YAG3: typing.ClassVar[LaserMode]  # value = <LaserMode.YAG3: 3>
+    YAG5: typing.ClassVar[LaserMode]  # value = <LaserMode.YAG5: 5>
+    __members__: typing.ClassVar[
+        dict[str, LaserMode]
+    ]  # value = {'CO2': <LaserMode.CO2: 0>, 'YAG1': <LaserMode.YAG1: 1>, 'YAG2': <LaserMode.YAG2: 2>, 'YAG3': <LaserMode.YAG3: 3>, 'LASER4': <LaserMode.LASER4: 4>, 'YAG5': <LaserMode.YAG5: 5>, 'LASER6': <LaserMode.LASER6: 6>}
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs): ...
+    def __eq__(self, other: typing.Any) -> bool: ...
+    def __getstate__(self) -> int: ...
+    def __hash__(self) -> int: ...
+    def __index__(self) -> int: ...
+    def __init__(self, value: int) -> None: ...
+    def __int__(self) -> int: ...
+    def __ne__(self, other: typing.Any) -> bool: ...
+    def __repr__(self) -> str: ...
+    def __setstate__(self, state: int) -> None: ...
+    def __str__(self) -> str: ...
+    @property
+    def name(self) -> str: ...
+    @property
+    def value(self) -> int: ...
 
 class ListStatus:
     """
@@ -218,14 +269,34 @@ def load_list(list_no: int, position: int) -> int:
     set the pointer to load at position of list_no, see p330
     """
 
+def set_jump_speed_ctrl(speed: float) -> None:
+    """
+    set the speed for jumps
+    """
+
 def set_laser_control(settings: int) -> None:
     """
     set the control settings of the laser, see p641
     """
 
-def set_laser_mode(mode: int) -> None:
+def set_laser_mode(mode: str) -> None:
     """
     set the mode of the laser, see p645
+    """
+
+def set_mark_speed_ctrl(speed: float) -> None:
+    """
+    set the speed for marks
+    """
+
+def set_scanner_delays(jump: int, mark: int, polygon: int) -> None:
+    """
+    set the scanner delays, in 10us increments
+    """
+
+def set_sky_writing_mode(speed: int) -> None:
+    """
+    set the skywriting mode
     """
 
 def throw_rtc_error(error_text: str) -> int:

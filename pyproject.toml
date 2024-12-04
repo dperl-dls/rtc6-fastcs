@@ -7,7 +7,7 @@ name = "rtc6-fastcs"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "License :: OSI Approved :: Apache Software License",
-    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.11",
 ]
 description = "FastCS IOC for the ScanLab RTC6 Ethernet laser controller"
 dependencies = ["fastcs"]

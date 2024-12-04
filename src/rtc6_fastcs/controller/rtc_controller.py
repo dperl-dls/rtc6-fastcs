@@ -1,7 +1,6 @@
 import asyncio
 from collections.abc import Callable
 from dataclasses import dataclass
-from enum import StrEnum, auto
 from typing import Any
 
 from fastcs.attributes import AttrR, AttrW, AttrRW, Sender
@@ -11,6 +10,7 @@ from fastcs.wrappers import command
 
 from py import process
 from rtc6_fastcs.controller.rtc_connection import RtcConnection
+from rtc6_fastcs.bindings import rtc6_bindings as rtc6
 
 
 class ConnectedSubController(SubController):
@@ -41,54 +41,67 @@ class RtcInfoController(ConnectedSubController):
         )
 
 
-
-
 class RtcControlSettings(ConnectedSubController):
-
-    class LaserMode(StrEnum):
-        CO2 = auto()
-        YAG1 = auto()
-        YAG2 = auto()
-        YAG3 = auto()
-        LASER4 = auto()
-        YAG5 = auto()
-        LASER = auto()
-
     @dataclass
     class ControlSettingsHandler(Sender):
-        cmd: str
+        cmd: Callable
 
-        async def put(self, controller: ConnectedSubController, attr: AttrW, value: Any):
-            controller.binding_execute(self.cmd, value)
+        async def put(
+            self, controller: ConnectedSubController, attr: AttrW, value: Any
+        ):
+            self.cmd(value)
+
+    @dataclass
+    class DelaysHandler(Sender):
+        update_period = 0.0
+
+        async def put(self, controller: "RtcControlSettings", attr: AttrW, value: Any):
+            rtc6.set_scanner_delays(
+                controller.jump_delay.get(),
+                controller.mark_delay.get(),
+                controller.polygon_delay.get(),
+            )
+
+        async def update(self, controller: "RtcControlSettings", attr: AttrR): ...
 
     # Page 645 of the manual
     laser_mode = AttrW(
         String(),
         group="LaserControl",
-        allowed_values=[str(v).upper() for v in list(LaserMode)],
-        handler=ControlSettingsHandler("set_laser_mode"),
+        allowed_values=[rtc6.LaserMode(i).name for i in range(7)],
+        handler=ControlSettingsHandler(rtc6.set_laser_mode),
     )
     jump_speed = AttrW(
         Float(),
         group="LaserControl",
-        handler=ControlSettingsHandler("set_jump_speed_ctrl"),
+        handler=ControlSettingsHandler(rtc6.set_mark_speed_ctrl),
     )  # set_jump_speed_ctrl
     mark_speed = AttrW(
         Float(),
         group="LaserControl",
-        handler=ControlSettingsHandler("set_mark_speed_ctrl"),
+        handler=ControlSettingsHandler(rtc6.set_jump_speed_ctrl),
     )  # set_mark_speed_ctrl
     # set_scanner_delays(jump, mark, polygon) in 10us increments
-    jump_delay = AttrW(Int(), group="LaserControl",
-        handler=ControlSettingsHandler("n_set_scanner_delays_ctrl"))
-    mark_delay = AttrW(Int(), group="LaserControl",
-        handler=ControlSettingsHandler("n_set_scanner_delays_ctrl"))
-    polygon_delay = AttrW(Int(), group="LaserControl",
-        handler=ControlSettingsHandler("n_set_scanner_delays_ctrl"))
+    # need to all be set at once - special handler
+    jump_delay = AttrRW(
+        Int(),
+        group="LaserControl",
+        handler=DelaysHandler(),
+    )
+    mark_delay = AttrRW(
+        Int(),
+        group="LaserControl",
+        handler=DelaysHandler(),
+    )
+    polygon_delay = AttrRW(
+        Int(),
+        group="LaserControl",
+        handler=DelaysHandler(),
+    )
     sky_writing_mode = AttrW(
         Int(),
         group="LaserControl",
-        handler=ControlSettingsHandler("set_sky_writing_mode")
+        handler=ControlSettingsHandler(rtc6.set_sky_writing_mode),
     )
 
 

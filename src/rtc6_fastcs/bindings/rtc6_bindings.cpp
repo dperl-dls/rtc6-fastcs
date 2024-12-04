@@ -226,6 +226,16 @@ enum ListStatus
     USED1,
     USED2,
 };
+enum LaserMode
+{
+    CO2,
+    YAG1,
+    YAG2,
+    YAG3,
+    LASER4,
+    YAG5,
+    LASER6,
+};
 py::list get_list_statuses()
 {
     py::list result;
@@ -247,6 +257,28 @@ void close_connection()
     if (!releasedCard)
     {
         throw RtcConnectionError("Could not release card - maybe it was not acquired?");
+    }
+}
+
+void set_laser_mode_by_enum_string(std::string mode)
+{
+    static std::unordered_map<std::string, LaserMode> const table = {
+        {"CO2", LaserMode::CO2},
+        {"YAG1", LaserMode::YAG1},
+        {"YAG2", LaserMode::YAG2},
+        {"YAG3", LaserMode::YAG3},
+        {"LASER4", LaserMode::LASER4},
+        {"YAG5", LaserMode::YAG5},
+        {"LASER6", LaserMode::LASER6},
+    };
+    auto m = table.find(mode);
+    if (m != table.end())
+    {
+        set_laser_mode(m->second);
+    }
+    else
+    {
+        throw RtcError(str(format("Failed to set laser mode with unknown mode %1% ") % mode));
     }
 }
 
@@ -275,6 +307,15 @@ PYBIND11_MODULE(rtc6_bindings, m)
         .value("USED1", ListStatus::USED1)
         .value("USED2", ListStatus::USED2);
 
+    py::enum_<LaserMode>(m, "LaserMode")
+        .value("CO2", LaserMode::CO2)
+        .value("YAG1", LaserMode::YAG1)
+        .value("YAG2", LaserMode::YAG2)
+        .value("YAG3", LaserMode::YAG3)
+        .value("LASER4", LaserMode::LASER4)
+        .value("YAG5", LaserMode::YAG5)
+        .value("LASER6", LaserMode::LASER6);
+
     // Real functions which are intended to be used
     m.def("check_connection", &check_conection, "check the active connection to the eth box: throws RtcConnectionError on failure, otherwise does nothing. If it fails, errors must be cleared afterwards.");
     m.def("connect", &connect, "connect to the eth-box at the given IP", py::arg("ip_string"), py::arg("program_file_path"), py::arg("correction_file_path"));
@@ -292,7 +333,7 @@ PYBIND11_MODULE(rtc6_bindings, m)
 
     // Taken directly from the library, might need to be updated with better typing, enums etc.
     m.def("get_last_error", &get_last_error, "get the last error for an ethernet command");
-    m.def("set_laser_mode", &set_laser_mode, "set the mode of the laser, see p645", py::arg("mode"));
+    m.def("set_laser_mode", &set_laser_mode_by_enum_string, "set the mode of the laser, see p645", py::arg("mode"));
     m.def("set_laser_control", &set_laser_control, "set the control settings of the laser, see p641", py::arg("settings"));
     m.def("get_input_pointer", &get_input_pointer, "get the pointer of list input");
     m.def("config_list_memory", &config_list, "set the memory for each position list, see p330", py::arg("list_1_mem"), py::arg("list_2_mem"));
@@ -300,10 +341,9 @@ PYBIND11_MODULE(rtc6_bindings, m)
 
     // simple control commands
     m.def("set_mark_speed_ctrl", &set_mark_speed_ctrl, "set the speed for marks", py::arg("speed"));
-    m.def("set_mark_speed_ctrl", &set_mark_speed_ctrl, "set the speed for marks", py::arg("speed"));
-    m.def("set_mark_speed_ctrl", &set_mark_speed_ctrl, "set the speed for marks", py::arg("speed"));
-    m.def("set_mark_speed_ctrl", &set_mark_speed_ctrl, "set the speed for marks", py::arg("speed"));
-    m.def("set_mark_speed_ctrl", &set_mark_speed_ctrl, "set the speed for marks", py::arg("speed"));
+    m.def("set_jump_speed_ctrl", &set_jump_speed_ctrl, "set the speed for jumps", py::arg("speed"));
+    m.def("set_sky_writing_mode", &set_sky_writing_mode, "set the skywriting mode", py::arg("speed"));
+    m.def("set_scanner_delays", &set_scanner_delays_ctrl, "set the scanner delays, in 10us increments", py::arg("jump"), py::arg("mark"), py::arg("polygon"));
 
     m.def("get_io_status", &get_io_status, "---");
     m.def("get_list_space", &get_list_space, "---");
