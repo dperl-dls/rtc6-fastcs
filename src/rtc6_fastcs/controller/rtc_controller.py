@@ -71,6 +71,11 @@ class RtcControlSettings(ConnectedSubController):
         allowed_values=[rtc6.LaserMode(i).name for i in range(7)],
         handler=ControlSettingsHandler(rtc6.set_laser_mode),
     )
+    laser_control = AttrW(
+        Int(),
+        group="LaserControl",
+        handler=ControlSettingsHandler(rtc6.set_laser_control),
+    )
     jump_speed = AttrW(
         Float(),
         group="LaserControl",

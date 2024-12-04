@@ -21,6 +21,7 @@ __all__ = [
     "close",
     "config_list_memory",
     "connect",
+    "execute_list",
     "get_card_info",
     "get_config_list",
     "get_error",
@@ -36,6 +37,7 @@ __all__ = [
     "ip_int_to_str",
     "ip_str_to_int",
     "load_list",
+    "set_end_of_list",
     "set_jump_speed_ctrl",
     "set_laser_control",
     "set_laser_mode",
@@ -194,6 +196,11 @@ def connect(ip_string: str, program_file_path: str, correction_file_path: str) -
     connect to the eth-box at the given IP
     """
 
+def execute_list(arg0: int) -> None:
+    """
+    execute the current list
+    """
+
 def get_card_info() -> CardInfo:
     """
     get info for the connected card; throws RtcConnectionError on failure
@@ -267,6 +274,11 @@ def ip_str_to_int(ip_string: str) -> int:
 def load_list(list_no: int, position: int) -> int:
     """
     set the pointer to load at position of list_no, see p330
+    """
+
+def set_end_of_list() -> None:
+    """
+    set the end of the list to be at the current pointer position
     """
 
 def set_jump_speed_ctrl(speed: float) -> None:

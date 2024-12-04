@@ -338,12 +338,14 @@ PYBIND11_MODULE(rtc6_bindings, m)
     m.def("get_input_pointer", &get_input_pointer, "get the pointer of list input");
     m.def("config_list_memory", &config_list, "set the memory for each position list, see p330", py::arg("list_1_mem"), py::arg("list_2_mem"));
     m.def("load_list", &load_list, "set the pointer to load at position of list_no, see p330", py::arg("list_no"), py::arg("position"));
+    m.def("set_end_of_list", &set_end_of_list, "set the end of the list to be at the current pointer position");
 
     // simple control commands
     m.def("set_mark_speed_ctrl", &set_mark_speed_ctrl, "set the speed for marks", py::arg("speed"));
     m.def("set_jump_speed_ctrl", &set_jump_speed_ctrl, "set the speed for jumps", py::arg("speed"));
     m.def("set_sky_writing_mode", &set_sky_writing_mode, "set the skywriting mode", py::arg("speed"));
     m.def("set_scanner_delays", &set_scanner_delays_ctrl, "set the scanner delays, in 10us increments", py::arg("jump"), py::arg("mark"), py::arg("polygon"));
+    m.def("execute_list", &execute_list, "execute the current list");
 
     m.def("get_io_status", &get_io_status, "---");
     m.def("get_list_space", &get_list_space, "---");
