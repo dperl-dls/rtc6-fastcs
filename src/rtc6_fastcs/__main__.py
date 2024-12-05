@@ -55,7 +55,7 @@ def ioc(
         typer.Argument(
             help="Path to the RTC6 correction file",
         ),
-    ] = "./rtc6_files/correction_files/Cor_1to1.ct5",
+    ] = "./correction_files/D2_2034.ct5",
     retry_connect: Annotated[
         bool,
         typer.Option(
