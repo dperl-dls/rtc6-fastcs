@@ -18,12 +18,6 @@ class ConnectedSubController(SubController):
         super().__init__()
         self._conn = conn
 
-    def binding_execute(self, cmd: str, *args: tuple, **kwargs: dict[str, Any]):
-        binding_command = self._conn.get_bindings.__getattribute__(cmd)
-        if not isinstance(binding_command, Callable):
-            raise TypeError(f"Command {cmd} is not an executable RTC6 binding!")
-        binding_command(*args, **kwargs)
-
 
 class RtcInfoController(ConnectedSubController):
     firmware_version = AttrR(Int(), group="Information")
@@ -140,6 +134,22 @@ class RtcListOperations(ConnectedSubController):
         async def proc(self):
             bindings = self._conn.get_bindings()
             bindings.add_line_to(self.x.get(), self.y.get())
+
+    @command()
+    async def init_list(self):
+        rtc6 = self._conn.get_bindings()
+        rtc6.config_list_memory(-1, 0)  # Just put everything on list one
+        rtc6.init_list_loading(1)
+
+    @command()
+    async def end_list(self):
+        rtc6 = self._conn.get_bindings()
+        rtc6.set_end_of_list()
+
+    @command()
+    async def execute_list(self):
+        rtc6 = self._conn.get_bindings()
+        rtc6.execute_list(1)
 
 
 class RtcController(Controller):
