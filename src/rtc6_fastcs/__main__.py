@@ -1,13 +1,17 @@
+import logging
 import subprocess
 from functools import cache
 from pathlib import Path
 from typing import Annotated
 
+import numpy as np
 import typer
 
 from rtc6_fastcs.controller import RtcController
 
 from . import __version__
+
+LOGGER = logging.getLogger(__name__)
 
 __all__ = ["main"]
 
@@ -56,6 +60,12 @@ def ioc(
             help="Path to the RTC6 correction file",
         ),
     ] = "./correction_files/D2_2034.ct5",
+    coordinate_system_correction_file: Annotated[
+        str,
+        typer.Argument(
+            help="path to a numpy matrix to use to correct the coordinate system",
+        ),
+    ] = "./correction_files/coord_transform",
     retry_connect: Annotated[
         bool,
         typer.Option(
@@ -85,7 +95,13 @@ def ioc(
     )
 
     backend = EpicsBackend(
-        get_controller(box_ip, program_file_dir, correction_file, retry_connect),
+        get_controller(
+            box_ip,
+            program_file_dir,
+            correction_file,
+            coordinate_system_correction_file,
+            retry_connect,
+        ),
         pv_prefix,
     )
     backend.create_docs(EpicsDocsOptions(output_path / "index.md"))
@@ -95,9 +111,19 @@ def ioc(
 
 @cache
 def get_controller(
-    box_ip: str, program_file: str, correction_file: str, retry_connect: bool
+    box_ip: str,
+    program_file: str,
+    correction_file: str,
+    coordinate_system_correction_file: str,
+    retry_connect: bool,
 ) -> RtcController:
-    return RtcController(box_ip, program_file, correction_file, retry_connect)
+    return RtcController(
+        box_ip,
+        program_file,
+        correction_file,
+        coordinate_system_correction_file,
+        retry_connect,
+    )
 
 
 if __name__ == "__main__":

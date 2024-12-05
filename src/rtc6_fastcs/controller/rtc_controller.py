@@ -1,6 +1,7 @@
 import asyncio
 from collections.abc import Callable
 from dataclasses import dataclass
+import logging
 from typing import Any
 
 from fastcs.attributes import AttrR, AttrW, AttrRW, Sender
@@ -8,9 +9,12 @@ from fastcs.controller import Controller, SubController
 from fastcs.datatypes import Bool, Float, Int, String
 from fastcs.wrappers import command
 
-from py import process
 from rtc6_fastcs.controller.rtc_connection import RtcConnection
 from rtc6_fastcs.bindings import rtc6_bindings as rtc6
+
+import numpy as np
+
+LOGGER = logging.getLogger(__name__)
 
 
 class ConnectedSubController(SubController):
@@ -104,19 +108,33 @@ class RtcControlSettings(ConnectedSubController):
     )
 
 
-class RtcListOperations(ConnectedSubController):
+class XYCorrectedConnectedSubController(ConnectedSubController):
+    def __init__(
+        self, conn: RtcConnection, coordinate_correction_matrix: np.ndarray
+    ) -> None:
+        super().__init__(conn)
+        self.coordinate_correction_matrix = coordinate_correction_matrix
+
+    def correct_xy(self, x: int, y: int):
+        """Due to mirrors directing the beam through the OAV, the coordinate system is rotated by 90 degrees"""
+        corrected = np.matmul(self.coordinate_correction_matrix, [x, y])
+        return tuple(corrected)
+
+
+class RtcListOperations(XYCorrectedConnectedSubController):
     list_pointer_position = AttrR(Int(), group="ListInfo")
 
-    class AddJump(ConnectedSubController):
+    class AddJump(XYCorrectedConnectedSubController):
         x = AttrRW(Int(), group="ListOps")
         y = AttrRW(Int(), group="ListOps")
 
         @command(group="ListOps")
         async def proc(self):
             bindings = self._conn.get_bindings()
-            bindings.add_jump_to(self.x.get(), self.y.get())
+            x, y = self.correct_xy(self.x.get(), self.y.get())
+            bindings.add_jump_to(x, y)
 
-    class AddArc(ConnectedSubController):
+    class AddArc(XYCorrectedConnectedSubController):
         x = AttrRW(Int(), group="ListOps")
         y = AttrRW(Int(), group="ListOps")
         angle = AttrRW(Float(), group="ListOps")
@@ -124,16 +142,18 @@ class RtcListOperations(ConnectedSubController):
         @command()
         async def proc(self):
             bindings = self._conn.get_bindings()
-            bindings.add_arc_to(self.x.get(), self.y.get(), self.angle.get())
+            x, y = self.correct_xy(self.x.get(), self.y.get())
+            bindings.add_arc_to(x, y, self.angle.get())
 
-    class AddLine(ConnectedSubController):
+    class AddLine(XYCorrectedConnectedSubController):
         x = AttrRW(Int(), group="ListOps")
         y = AttrRW(Int(), group="ListOps")
 
         @command()
         async def proc(self):
             bindings = self._conn.get_bindings()
-            bindings.add_line_to(self.x.get(), self.y.get())
+            x, y = self.correct_xy(self.x.get(), self.y.get())
+            bindings.add_line_to(x, y)
 
     @command()
     async def init_list(self):
@@ -158,25 +178,41 @@ class RtcController(Controller):
         box_ip: str,
         program_file_dir: str,
         correction_file: str,
+        coordinate_system_correction_file: str = "",
         retry_connect: bool = False,
     ) -> None:
         super().__init__()
+        try:
+            self.coordinate_system_transform = np.loadtxt(
+                coordinate_system_correction_file
+            )
+        except Exception:
+            LOGGER.warning(
+                "Failed to open coordinate system transformation file, defaulting to identity matrix."
+            )
+            self.coordinate_system_transform = np.array([[1, 0], [0, 1]])
         self._conn = RtcConnection(
             box_ip, program_file_dir, correction_file, retry_connect
         )
+
         self._info_controller = RtcInfoController(self._conn)
         self.register_sub_controller("INFO", self._info_controller)
         self.register_sub_controller("CONTROL", RtcControlSettings(self._conn))
-        list_controller = RtcListOperations(self._conn)
+        list_controller = RtcListOperations(
+            self._conn, self.coordinate_system_transform
+        )
         self.register_sub_controller("LIST", list_controller)
         list_controller.register_sub_controller(
-            "ADDJUMP", list_controller.AddJump(self._conn)
+            "ADDJUMP",
+            list_controller.AddJump(self._conn, self.coordinate_system_transform),
         )
         list_controller.register_sub_controller(
-            "ADDARC", list_controller.AddArc(self._conn)
+            "ADDARC",
+            list_controller.AddArc(self._conn, self.coordinate_system_transform),
         )
         list_controller.register_sub_controller(
-            "ADDLINE", list_controller.AddLine(self._conn)
+            "ADDLINE",
+            list_controller.AddLine(self._conn, self.coordinate_system_transform),
         )
 
     async def connect(self) -> None:

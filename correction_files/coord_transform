@@ -1,0 +1,16 @@
+#
+# The OAV mirrors transform the coordinate system by a 90 degree rotation
+# and mirroring along Y axis (so that X is flipped)
+# 
+# The transformation matrix described here will be applied to input coordinates
+# before being passed on to the scan controller
+#
+# It is in numpy.savetxt()/numpy.loadtxt() format with '#' to start comments
+#
+# It is   | 0  1 | * |-1  0 |
+#         |-1  0 |   | 0  1 |
+#
+
+0.000000000000000000e+00 -1.000000000000000000e+00
+-1.000000000000000000e+00 0.000000000000000000e+00
+
