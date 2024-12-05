@@ -68,7 +68,7 @@ class Rtc6List(StandardReadable):
         with self.add_children_as_readables():
             self.add_arc = self.AddArc(prefix + "ADDARC:")
             self.add_line = self.AddLine(prefix + "ADDLINE:")
-            self.add_line = self.AddJump(prefix + "ADDJUMP:")
+            self.add_jump = self.AddJump(prefix + "ADDJUMP:")
             self.init_list = epics_signal_x(prefix + "InitList")
             self.end_list = epics_signal_x(prefix + "EndList")
             self.execute_list = epics_signal_x(prefix + "ExecuteList")
