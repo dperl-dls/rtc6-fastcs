@@ -19,10 +19,9 @@ class Rtc6ControlSettings(StandardReadable):
             self.laser_control = epics_signal_rw(int, prefix + "LaserControl")
             self.jump_speed = epics_signal_rw(float, prefix + "JumpSpeed")
             self.mark_speed = epics_signal_rw(float, prefix + "MarkSpeed")
-            self.jump_delay = epics_signal_rw(float, prefix + "JumpDelay")
-            self.mark_delay = epics_signal_rw(float, prefix + "MarkDelay")
-            self.polygon_delay = epics_signal_rw(float, prefix + "PolygonDelay")
-            self.init_list = epics_signal_x(prefix + "InitList")
+            self.jump_delay = epics_signal_rw(int, prefix + "JumpDelay")
+            self.mark_delay = epics_signal_rw(int, prefix + "MarkDelay")
+            self.polygon_delay = epics_signal_rw(int, prefix + "PolygonDelay")
 
 
 class Rtc6Info(StandardReadable):
@@ -70,7 +69,9 @@ class Rtc6List(StandardReadable):
             self.add_arc = self.AddArc(prefix + "ADDARC:")
             self.add_line = self.AddLine(prefix + "ADDLINE:")
             self.add_line = self.AddJump(prefix + "ADDJUMP:")
+            self.init_list = epics_signal_x(prefix + "InitList")
             self.end_list = epics_signal_x(prefix + "EndList")
+            self.execute_list = epics_signal_x(prefix + "ExecuteList")
 
 
 class Rtc6Eth(StandardReadable, AsyncStageable, Flyable):
@@ -80,20 +81,19 @@ class Rtc6Eth(StandardReadable, AsyncStageable, Flyable):
             self.info = Rtc6Info(prefix + "INFO:")
             self.control_settings = Rtc6ControlSettings(prefix + "CONTROL:")
             self.list = Rtc6List(prefix + "LIST:")
-            self.execute_list = epics_signal_x(prefix + "ExecuteList")
 
     @AsyncStatus.wrap
     async def stage(self):
         """Set things up to start writing list commands"""
         await self.control_settings.laser_mode.set("YAG5")
         await self.control_settings.laser_control.set(0)
-        await self.control_settings.init_list.trigger()
+        await self.list.init_list.trigger()
 
     @AsyncStatus.wrap
     async def kickoff(self):
         """Set the end of the list at the current position and set it to execute"""
         await self.list.end_list.trigger()
-        await self.execute_list.trigger()
+        await self.list.execute_list.trigger()
 
     @AsyncStatus.wrap
     async def complete(self):

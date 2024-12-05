@@ -138,7 +138,7 @@ class RtcListOperations(ConnectedSubController):
     @command()
     async def init_list(self):
         rtc6 = self._conn.get_bindings()
-        rtc6.config_list_memory(-1, 0)  # Just put everything on list one
+        rtc6.config_list_memory(10000000, 1)  # Just put everything on list one
         rtc6.init_list_loading(1)
 
     @command()
