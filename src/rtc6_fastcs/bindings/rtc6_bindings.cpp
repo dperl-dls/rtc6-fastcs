@@ -330,6 +330,7 @@ PYBIND11_MODULE(rtc6_bindings, m)
     m.def("add_arc_to", &arc_abs, py::arg("x"), py::arg("y"), py::arg("angle"));
     m.def("add_jump_to", &jump_abs, py::arg("x"), py::arg("y"));
     m.def("add_line_to", &mark_abs, py::arg("x"), py::arg("y"));
+    m.def("add_laser_on", &laser_on_list, "turn the laser on for n bits of time, see page 450 ", py::arg("time_10us"));
 
     // Taken directly from the library, might need to be updated with better typing, enums etc.
     m.def("get_last_error", &get_last_error, "get the last error for an ethernet command");

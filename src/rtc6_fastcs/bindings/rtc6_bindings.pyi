@@ -15,6 +15,7 @@ __all__ = [
     "add",
     "add_arc_to",
     "add_jump_to",
+    "add_laser_on",
     "add_line_to",
     "check_connection",
     "clear_errors",
@@ -170,6 +171,11 @@ def add(i: int, j: int) -> int:
 
 def add_arc_to(x: int, y: int, angle: float) -> None: ...
 def add_jump_to(x: int, y: int) -> None: ...
+def add_laser_on(time_10us: int) -> None:
+    """
+    turn the laser on for n bits of time, see page 450
+    """
+
 def add_line_to(x: int, y: int) -> None: ...
 def check_connection() -> None:
     """

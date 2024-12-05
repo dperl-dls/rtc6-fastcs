@@ -115,10 +115,12 @@ class XYCorrectedConnectedSubController(ConnectedSubController):
         super().__init__(conn)
         self.coordinate_correction_matrix = coordinate_correction_matrix
 
-    def correct_xy(self, x: int, y: int):
+    def correct_xy(self, x: int, y: int) -> tuple[int, int]:
         """Due to mirrors directing the beam through the OAV, the coordinate system is rotated by 90 degrees"""
+        LOGGER.info(f"Correcting {(x,y)} by {self.coordinate_correction_matrix}")
         corrected = np.matmul(self.coordinate_correction_matrix, [x, y])
-        return tuple(corrected)
+        # return (int(corrected[0]), int(corrected[1]))
+        return (x, y)
 
 
 class RtcListOperations(XYCorrectedConnectedSubController):
