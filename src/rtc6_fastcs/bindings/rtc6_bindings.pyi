@@ -12,7 +12,6 @@ __all__ = [
     "RtcConnectionError",
     "RtcError",
     "RtcListError",
-    "add",
     "add_arc_to",
     "add_jump_to",
     "add_laser_on",
@@ -35,8 +34,6 @@ __all__ = [
     "get_rtc_mode",
     "get_temperature",
     "init_list_loading",
-    "ip_int_to_str",
-    "ip_str_to_int",
     "load_list",
     "set_end_of_list",
     "set_jump_speed_ctrl",
@@ -45,7 +42,6 @@ __all__ = [
     "set_mark_speed_ctrl",
     "set_scanner_delays",
     "set_sky_writing_mode",
-    "throw_rtc_error",
 ]
 
 class CardInfo:
@@ -164,11 +160,6 @@ class RtcError(Exception):
 class RtcListError(Exception):
     pass
 
-def add(i: int, j: int) -> int:
-    """
-    A function that adds two numbers
-    """
-
 def add_arc_to(x: int, y: int, angle: float) -> None: ...
 def add_jump_to(x: int, y: int) -> None: ...
 def add_laser_on(time_10us: int) -> None:
@@ -267,16 +258,6 @@ def init_list_loading(arg0: int) -> None:
     initialise the given list (1 or 2)
     """
 
-def ip_int_to_str(ip_int: int) -> str:
-    """
-    convert IP address from int to string
-    """
-
-def ip_str_to_int(ip_string: str) -> int:
-    """
-    convert IP address from string to int
-    """
-
 def load_list(list_no: int, position: int) -> int:
     """
     set the pointer to load at position of list_no, see p330
@@ -315,9 +296,4 @@ def set_scanner_delays(jump: int, mark: int, polygon: int) -> None:
 def set_sky_writing_mode(speed: int) -> None:
     """
     set the skywriting mode
-    """
-
-def throw_rtc_error(error_text: str) -> int:
-    """
-    throw an exception with the given text
     """

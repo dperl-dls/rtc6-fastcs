@@ -353,10 +353,4 @@ PYBIND11_MODULE(rtc6_bindings, m)
     m.def("get_config_list", &get_config_list, "---");
     m.def("get_rtc_mode", &get_rtc_mode, "---");
     m.def("get_temperature", &get_temperature, "---");
-
-    // Just for testing - TODO remove these when things are going
-    m.def("add", &add, "A function that adds two numbers", py::arg("i"), py::arg("j"));
-    m.def("throw_rtc_error", &throw_rtc_error, "throw an exception with the given text", py::arg("error_text"));
-    m.def("ip_str_to_int", &ip_str_to_int, "convert IP address from string to int", py::arg("ip_string"));
-    m.def("ip_int_to_str", &ip_int_to_str, "convert IP address from int to string", py::arg("ip_int"));
 }

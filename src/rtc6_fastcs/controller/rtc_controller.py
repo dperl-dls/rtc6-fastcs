@@ -51,7 +51,7 @@ class RtcControlSettings(ConnectedSubController):
 
     @dataclass
     class DelaysHandler(Sender):
-        update_period = 0.0
+        update_period: float | None = None
 
         async def put(self, controller: "RtcControlSettings", attr: AttrW, value: Any):
             rtc6.set_scanner_delays(
@@ -116,12 +116,10 @@ class XYCorrectedConnectedSubController(ConnectedSubController):
         self.coordinate_correction_matrix = coordinate_correction_matrix
 
     def correct_xy(self, x: int, y: int) -> tuple[int, int]:
-        """Due to mirrors directing the beam through the OAV, the coordinate system is rotated by 90 degrees"""
+        """Correct for transformations in the laser / oav optics"""
         LOGGER.info(f"Correcting {(x,y)} by {self.coordinate_correction_matrix}")
         corrected = np.matmul(self.coordinate_correction_matrix, [x, y])
-        # return (int(corrected[0]), int(corrected[1]))
-        return (x, y)
-
+        return (int(corrected[0]), int(corrected[1]))
 
 class RtcListOperations(XYCorrectedConnectedSubController):
     list_pointer_position = AttrR(Int(), group="ListInfo")

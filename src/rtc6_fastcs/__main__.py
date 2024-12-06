@@ -3,9 +3,11 @@ import subprocess
 from functools import cache
 from pathlib import Path
 from typing import Annotated
+from fastcs.launch import FastCS
 
-import numpy as np
+from fastcs.backend import Backend
 import typer
+from fastcs.transport.epics.options import EpicsIOCOptions, EpicsOptions
 
 from rtc6_fastcs.controller import RtcController
 
@@ -43,6 +45,16 @@ def install_library():
     subprocess.call(
         ["bash", "/workspace/rtc6-controller/src/rtc6_fastcs/install_library.sh"]
     )
+
+
+def create_ui_and_docs(controller: RtcController, prefix: str, output_path: Path):
+    from fastcs.transport.epics.gui import EpicsGUI, EpicsGUIOptions
+    from fastcs.transport.epics.docs import EpicsDocs, EpicsDocsOptions
+
+    gui = EpicsGUI(controller, prefix)
+    gui.create_gui(EpicsGUIOptions(output_path / "index.bob"))
+    docs = EpicsDocs(controller)
+    docs.create_docs(EpicsDocsOptions(output_path / "index.md"))
 
 
 @app.command()
@@ -88,25 +100,19 @@ def ioc(
     """
     Start up the service
     """
-    from fastcs.backends.epics.backend import (
-        EpicsBackend,
-        EpicsDocsOptions,
-        EpicsGUIOptions,
-    )
 
-    backend = EpicsBackend(
-        get_controller(
-            box_ip,
-            program_file_dir,
-            correction_file,
-            coordinate_system_correction_file,
-            retry_connect,
-        ),
-        pv_prefix,
+    controller = get_controller(
+        box_ip,
+        program_file_dir,
+        correction_file,
+        coordinate_system_correction_file,
+        retry_connect,
     )
-    backend.create_docs(EpicsDocsOptions(output_path / "index.md"))
-    backend.create_gui(EpicsGUIOptions(output_path / "index.bob"))
-    backend.run()
+    create_ui_and_docs(controller, pv_prefix, output_path)
+
+    epics_options = EpicsOptions(ioc=EpicsIOCOptions(pv_prefix=pv_prefix))
+    fastcs = FastCS(controller, epics_options)
+    fastcs.run()
 
 
 @cache
