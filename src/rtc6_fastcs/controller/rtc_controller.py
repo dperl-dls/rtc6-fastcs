@@ -91,17 +91,17 @@ class RtcControlSettings(ConnectedSubController):
     )  # set_mark_speed_ctrl
     # set_scanner_delays(jump, mark, polygon) in 10us increments
     # need to all be set at once - special handler
-    jump_delay = UpdatingAttrRW(
+    jump_delay = AttrRW(
         Int(),
         group="LaserControl",
         handler=DelaysHandler(),
     )
-    mark_delay = UpdatingAttrRW(
+    mark_delay = AttrRW(
         Int(),
         group="LaserControl",
         handler=DelaysHandler(),
     )
-    polygon_delay = UpdatingAttrRW(
+    polygon_delay = AttrRW(
         Int(),
         group="LaserControl",
         handler=DelaysHandler(),
