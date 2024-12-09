@@ -16,11 +16,31 @@ import numpy as np
 
 LOGGER = logging.getLogger(__name__)
 
+
 class UpdatingAttrRW(AttrRW):
     """This is only necessary due to https://github.com/DiamondLightSource/FastCS/issues/101 and should be removed when the correct solution it known"""
-    def __init__(self, datatype: DataType, access_mode=AttrMode.READ_WRITE, group: str | None = None, handler: Handler | None = None, initial_value: Any | None = None, allowed_values: list | None = None, description: str | None = None) -> None:
-        super().__init__(datatype, access_mode, group, handler, initial_value, allowed_values, description)
+
+    def __init__(
+        self,
+        datatype: DataType,
+        access_mode=AttrMode.READ_WRITE,
+        group: str | None = None,
+        handler: Handler | None = None,
+        initial_value: Any | None = None,
+        allowed_values: list | None = None,
+        description: str | None = None,
+    ) -> None:
+        super().__init__(
+            datatype,
+            access_mode,
+            group,
+            handler,
+            initial_value,
+            allowed_values,
+            description,
+        )
         self.set_process_callback(self.set)
+
 
 class ConnectedSubController(SubController):
     def __init__(self, conn: RtcConnection) -> None:
@@ -125,6 +145,7 @@ class XYCorrectedConnectedSubController(ConnectedSubController):
         LOGGER.info(f"Correcting {(x,y)} by {self.coordinate_correction_matrix}")
         corrected = np.matmul(self.coordinate_correction_matrix, [x, y])
         return (int(corrected[0]), int(corrected[1]))
+
 
 class RtcListOperations(XYCorrectedConnectedSubController):
     list_pointer_position = AttrR(Int(), group="ListInfo")
