@@ -31,3 +31,12 @@ def draw_square(rtc6: Rtc6Eth, size: int):
     yield from rectangle(rtc6, size, size)
     yield from bps.kickoff(rtc6)
     yield from bps.collect(rtc6)
+
+@bpp.run_decorator
+def draw_polygon(rtc6: Rtc6Eth, points: list[tuple[int, int]]):
+    yield from bps.stage(rtc6)
+    yield from jump(rtc6, *points[0])
+    for point in points[1:]:
+        yield from line(rtc6, *point)
+    yield from bps.kickoff(rtc6)
+    yield from bps.collect(rtc6)
