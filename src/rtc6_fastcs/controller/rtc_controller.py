@@ -4,9 +4,9 @@ from dataclasses import dataclass
 import logging
 from typing import Any
 
-from fastcs.attributes import AttrR, AttrW, AttrRW, Sender
+from fastcs.attributes import AttrMode, AttrR, AttrW, AttrRW, Handler, Sender
 from fastcs.controller import Controller, SubController
-from fastcs.datatypes import Bool, Float, Int, String
+from fastcs.datatypes import Bool, DataType, Float, Int, String
 from fastcs.wrappers import command
 
 from rtc6_fastcs.controller.rtc_connection import RtcConnection
@@ -16,6 +16,11 @@ import numpy as np
 
 LOGGER = logging.getLogger(__name__)
 
+class UpdatingAttrRW(AttrRW):
+    """This is only necessary due to https://github.com/DiamondLightSource/FastCS/issues/101 and should be removed when the correct solution it known"""
+    def __init__(self, datatype: DataType, access_mode=AttrMode.READ_WRITE, group: str | None = None, handler: Handler | None = None, initial_value: Any | None = None, allowed_values: list | None = None, description: str | None = None) -> None:
+        super().__init__(datatype, access_mode, group, handler, initial_value, allowed_values, description)
+        self.set_process_callback(self.set)
 
 class ConnectedSubController(SubController):
     def __init__(self, conn: RtcConnection) -> None:
@@ -86,17 +91,17 @@ class RtcControlSettings(ConnectedSubController):
     )  # set_mark_speed_ctrl
     # set_scanner_delays(jump, mark, polygon) in 10us increments
     # need to all be set at once - special handler
-    jump_delay = AttrRW(
+    jump_delay = UpdatingAttrRW(
         Int(),
         group="LaserControl",
         handler=DelaysHandler(),
     )
-    mark_delay = AttrRW(
+    mark_delay = UpdatingAttrRW(
         Int(),
         group="LaserControl",
         handler=DelaysHandler(),
     )
-    polygon_delay = AttrRW(
+    polygon_delay = UpdatingAttrRW(
         Int(),
         group="LaserControl",
         handler=DelaysHandler(),
@@ -125,8 +130,8 @@ class RtcListOperations(XYCorrectedConnectedSubController):
     list_pointer_position = AttrR(Int(), group="ListInfo")
 
     class AddJump(XYCorrectedConnectedSubController):
-        x = AttrRW(Int(), group="ListOps")
-        y = AttrRW(Int(), group="ListOps")
+        x = UpdatingAttrRW(Int(), group="ListOps")
+        y = UpdatingAttrRW(Int(), group="ListOps")
 
         @command(group="ListOps")
         async def proc(self):
@@ -135,9 +140,9 @@ class RtcListOperations(XYCorrectedConnectedSubController):
             bindings.add_jump_to(x, y)
 
     class AddArc(XYCorrectedConnectedSubController):
-        x = AttrRW(Int(), group="ListOps")
-        y = AttrRW(Int(), group="ListOps")
-        angle = AttrRW(Float(), group="ListOps")
+        x = UpdatingAttrRW(Int(), group="ListOps")
+        y = UpdatingAttrRW(Int(), group="ListOps")
+        angle = UpdatingAttrRW(Float(), group="ListOps")
 
         @command()
         async def proc(self):
@@ -146,8 +151,8 @@ class RtcListOperations(XYCorrectedConnectedSubController):
             bindings.add_arc_to(x, y, self.angle.get())
 
     class AddLine(XYCorrectedConnectedSubController):
-        x = AttrRW(Int(), group="ListOps")
-        y = AttrRW(Int(), group="ListOps")
+        x = UpdatingAttrRW(Int(), group="ListOps")
+        y = UpdatingAttrRW(Int(), group="ListOps")
 
         @command()
         async def proc(self):
