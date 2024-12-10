@@ -34,35 +34,46 @@ def rectangle(rtc6: Rtc6Eth, x: int, y: int, origin: tuple[int, int] = (0, 0)):
     yield from line(rtc6, *origin)
 
 
-@bpp.run_decorator
+@bpp.run_decorator()
 def draw_square(rtc6: Rtc6Eth, size: int):
     yield from bps.stage(rtc6)
     yield from rectangle(rtc6, size, size)
     yield from bps.trigger(rtc6)
 
 
-LineInput = tuple[int, int]
+JumpOrLineInput = tuple[int, int, bool] # x, y, laser_on
 ArcInput = tuple[int, int, float]
 
 
-@bpp.run_decorator
-def draw_polygon(rtc6: Rtc6Eth, points: list[LineInput]):
+@bpp.run_decorator()
+def draw_polygon(rtc6: Rtc6Eth, points: list[JumpOrLineInput]):
     yield from bps.stage(rtc6)
-    yield from jump(rtc6, *points[0])
+    yield from jump(rtc6, *points[0][:-1])
     for point in points[1:]:
-        yield from line(rtc6, *point)
+        if point[2]:
+            yield from line(rtc6, *point[:-1])
+        else:
+            yield from jump(rtc6, *point[:-1])
     yield from bps.trigger(rtc6)
 
 
-@bpp.run_decorator
-def draw_polygon_with_arcs(rtc6: Rtc6Eth, points: list[LineInput | ArcInput]):
+@bpp.run_decorator()
+def draw_polygon_with_arcs(rtc6: Rtc6Eth, points: list[JumpOrLineInput | ArcInput]):
     yield from bps.stage(rtc6)
     if len(points[0]) != 2:
         raise ValueError("List of lines/arcs must start with a single point to jump to")
     yield from jump(rtc6, *points[0])
     for point in points[1:]:
-        if len(point) == 2:
-            yield from line(rtc6, *point)
+        if isinstance(point[2], bool):
+            if point[2]:
+                yield from line(rtc6, *point[:-1])
+            else:
+                yield from jump(rtc6, *point[:-1])
         else:
             yield from arc(rtc6, *point)
     yield from bps.trigger(rtc6)
+
+@bpp.run_decorator()
+def go_to_home(rtc6: Rtc6Eth):
+    yield from bps.stage(rtc6)
+    yield from jump(rtc6, 0,0)

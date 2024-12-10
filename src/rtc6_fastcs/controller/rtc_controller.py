@@ -133,6 +133,7 @@ class RtcListOperations(XYCorrectedConnectedSubController):
 
         @command(group="ListOps")
         async def proc(self):
+            print("adding jump")
             bindings = self._conn.get_bindings()
             x, y = self.correct_xy(self.x.get(), self.y.get())
             bindings.add_jump_to(x, y)
@@ -144,6 +145,7 @@ class RtcListOperations(XYCorrectedConnectedSubController):
 
         @command()
         async def proc(self):
+            print("adding arc")
             bindings = self._conn.get_bindings()
             x, y = self.correct_xy(self.x.get(), self.y.get())
             bindings.add_arc_to(x, y, self.angle.get())
@@ -154,11 +156,9 @@ class RtcListOperations(XYCorrectedConnectedSubController):
 
         @command()
         async def proc(self):
+            print("adding line")
             bindings = self._conn.get_bindings()
-            print(f"Current addline x: {self.x.get()}")
-            print(f"Current addline y: {self.y.get()}")
-            # x, y = self.correct_xy(self.x.get(), self.y.get())
-            bindings.add_line_to(self.x.get(), self.y.get())
+            bindings.add_line_to(*self.correct_xy(self.x.get(), self.y.get()))
 
     @command()
     async def init_list(self):
