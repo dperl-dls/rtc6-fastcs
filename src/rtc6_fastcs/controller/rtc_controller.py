@@ -17,31 +17,6 @@ import numpy as np
 LOGGER = logging.getLogger(__name__)
 
 
-class UpdatingAttrRW(AttrRW):
-    """This is only necessary due to https://github.com/DiamondLightSource/FastCS/issues/101 and should be removed when the correct solution it known"""
-
-    def __init__(
-        self,
-        datatype: DataType,
-        access_mode=AttrMode.READ_WRITE,
-        group: str | None = None,
-        handler: Handler | None = None,
-        initial_value: Any | None = None,
-        allowed_values: list | None = None,
-        description: str | None = None,
-    ) -> None:
-        super().__init__(
-            datatype,
-            access_mode,
-            group,
-            handler,
-            initial_value,
-            allowed_values,
-            description,
-        )
-        self.set_process_callback(self.set)
-
-
 class ConnectedSubController(SubController):
     def __init__(self, conn: RtcConnection) -> None:
         super().__init__()
@@ -144,7 +119,7 @@ class XYCorrectedConnectedSubController(ConnectedSubController):
         """Correct for transformations in the laser / oav optics"""
         print(f"Correcting {(x,y)} by {self.coordinate_correction_matrix}")
         corrected = np.matmul(self.coordinate_correction_matrix, [x, y])
-        as_ints =  (int(corrected[0]), int(corrected[1]))
+        as_ints = (int(corrected[0]), int(corrected[1]))
         print(f"Result: {corrected} => {as_ints}")
         return as_ints
 
@@ -153,8 +128,8 @@ class RtcListOperations(XYCorrectedConnectedSubController):
     list_pointer_position = AttrR(Int(), group="ListInfo")
 
     class AddJump(XYCorrectedConnectedSubController):
-        x = UpdatingAttrRW(Int(), group="ListOps")
-        y = UpdatingAttrRW(Int(), group="ListOps")
+        x = AttrRW(Int(), group="ListOps")
+        y = AttrRW(Int(), group="ListOps")
 
         @command(group="ListOps")
         async def proc(self):
@@ -163,9 +138,9 @@ class RtcListOperations(XYCorrectedConnectedSubController):
             bindings.add_jump_to(x, y)
 
     class AddArc(XYCorrectedConnectedSubController):
-        x = UpdatingAttrRW(Int(), group="ListOps")
-        y = UpdatingAttrRW(Int(), group="ListOps")
-        angle = UpdatingAttrRW(Float(), group="ListOps")
+        x = AttrRW(Int(), group="ListOps")
+        y = AttrRW(Int(), group="ListOps")
+        angle = AttrRW(Float(), group="ListOps")
 
         @command()
         async def proc(self):
@@ -174,8 +149,8 @@ class RtcListOperations(XYCorrectedConnectedSubController):
             bindings.add_arc_to(x, y, self.angle.get())
 
     class AddLine(XYCorrectedConnectedSubController):
-        x = UpdatingAttrRW(Int(), group="ListOps")
-        y = UpdatingAttrRW(Int(), group="ListOps")
+        x = AttrRW(Int(), group="ListOps")
+        y = AttrRW(Int(), group="ListOps")
 
         @command()
         async def proc(self):

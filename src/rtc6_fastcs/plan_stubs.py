@@ -54,7 +54,6 @@ def draw_polygon(rtc6: Rtc6Eth, points: list[LineInput]):
     yield from bps.trigger(rtc6)
 
 
-
 @bpp.run_decorator
 def draw_polygon_with_arcs(rtc6: Rtc6Eth, points: list[LineInput | ArcInput]):
     yield from bps.stage(rtc6)
@@ -67,4 +66,3 @@ def draw_polygon_with_arcs(rtc6: Rtc6Eth, points: list[LineInput | ArcInput]):
         else:
             yield from arc(rtc6, *point)
     yield from bps.trigger(rtc6)
-
