@@ -142,9 +142,11 @@ class XYCorrectedConnectedSubController(ConnectedSubController):
 
     def correct_xy(self, x: int, y: int) -> tuple[int, int]:
         """Correct for transformations in the laser / oav optics"""
-        LOGGER.info(f"Correcting {(x,y)} by {self.coordinate_correction_matrix}")
+        print(f"Correcting {(x,y)} by {self.coordinate_correction_matrix}")
         corrected = np.matmul(self.coordinate_correction_matrix, [x, y])
-        return (int(corrected[0]), int(corrected[1]))
+        as_ints =  (int(corrected[0]), int(corrected[1]))
+        print(f"Result: {corrected} => {as_ints}")
+        return as_ints
 
 
 class RtcListOperations(XYCorrectedConnectedSubController):
@@ -178,8 +180,10 @@ class RtcListOperations(XYCorrectedConnectedSubController):
         @command()
         async def proc(self):
             bindings = self._conn.get_bindings()
-            x, y = self.correct_xy(self.x.get(), self.y.get())
-            bindings.add_line_to(x, y)
+            print(f"Current addline x: {self.x.get()}")
+            print(f"Current addline y: {self.y.get()}")
+            # x, y = self.correct_xy(self.x.get(), self.y.get())
+            bindings.add_line_to(self.x.get(), self.y.get())
 
     @command()
     async def init_list(self):

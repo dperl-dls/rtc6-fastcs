@@ -38,8 +38,7 @@ def rectangle(rtc6: Rtc6Eth, x: int, y: int, origin: tuple[int, int] = (0, 0)):
 def draw_square(rtc6: Rtc6Eth, size: int):
     yield from bps.stage(rtc6)
     yield from rectangle(rtc6, size, size)
-    yield from bps.kickoff(rtc6)
-    yield from bps.collect(rtc6)
+    yield from bps.trigger(rtc6)
 
 
 LineInput = tuple[int, int]
@@ -52,8 +51,8 @@ def draw_polygon(rtc6: Rtc6Eth, points: list[LineInput]):
     yield from jump(rtc6, *points[0])
     for point in points[1:]:
         yield from line(rtc6, *point)
-    yield from bps.kickoff(rtc6)
-    yield from bps.collect(rtc6)
+    yield from bps.trigger(rtc6)
+
 
 
 @bpp.run_decorator
@@ -67,5 +66,5 @@ def draw_polygon_with_arcs(rtc6: Rtc6Eth, points: list[LineInput | ArcInput]):
             yield from line(rtc6, *point)
         else:
             yield from arc(rtc6, *point)
-    yield from bps.kickoff(rtc6)
-    yield from bps.collect(rtc6)
+    yield from bps.trigger(rtc6)
+

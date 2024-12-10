@@ -1,5 +1,5 @@
 from ophyd_async.core import StandardReadable, AsyncStageable
-from bluesky.protocols import Flyable
+from bluesky.protocols import Triggerable
 from ophyd_async.epics.core import (
     epics_signal_rw,
     epics_signal_r,
@@ -74,7 +74,7 @@ class Rtc6List(StandardReadable):
             self.execute_list = epics_signal_x(prefix + "ExecuteList")
 
 
-class Rtc6Eth(StandardReadable, AsyncStageable, Flyable):
+class Rtc6Eth(StandardReadable, AsyncStageable, Triggerable):
     def __init__(self, prefix: str = "RTC6ETH:", name: str = "") -> None:
         super().__init__(name)
         with self.add_children_as_readables():
@@ -90,7 +90,7 @@ class Rtc6Eth(StandardReadable, AsyncStageable, Flyable):
         await self.list.init_list.trigger()
 
     @AsyncStatus.wrap
-    async def kickoff(self):
+    async def trigger(self):
         """Set the end of the list at the current position and set it to execute"""
         await self.list.end_list.trigger()
         await self.list.execute_list.trigger()
@@ -99,6 +99,7 @@ class Rtc6Eth(StandardReadable, AsyncStageable, Flyable):
     async def complete(self):
         """Wait for the current list execution to complete"""
         # Todo add a signal for this with get_status
+        # and change trigger to kickoff
 
     @AsyncStatus.wrap
     async def unstage(self): ...
