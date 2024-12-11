@@ -1,7 +1,10 @@
+from typing import Generator
 import bluesky.plan_stubs as bps
 import bluesky.preprocessors as bpp
 from rtc6_fastcs.device import Rtc6Eth
-
+from blueapi.core import MsgGenerator
+from dodal.common.beamlines.beamline_utils import device_factory
+from bluesky.run_engine import call_in_bluesky_event_loop
 
 def line(rtc6: Rtc6Eth, x: int, y: int):
     """add an instruction to draw a line to x, y"""
@@ -60,9 +63,7 @@ def draw_polygon(rtc6: Rtc6Eth, points: list[JumpOrLineInput]):
 @bpp.run_decorator()
 def draw_polygon_with_arcs(rtc6: Rtc6Eth, points: list[JumpOrLineInput | ArcInput]):
     yield from bps.stage(rtc6)
-    if len(points[0]) != 2:
-        raise ValueError("List of lines/arcs must start with a single point to jump to")
-    yield from jump(rtc6, *points[0])
+    yield from jump(rtc6, *points[0][:-1])
     for point in points[1:]:
         if isinstance(point[2], bool):
             if point[2]:
@@ -77,3 +78,20 @@ def draw_polygon_with_arcs(rtc6: Rtc6Eth, points: list[JumpOrLineInput | ArcInpu
 def go_to_home(rtc6: Rtc6Eth):
     yield from bps.stage(rtc6)
     yield from jump(rtc6, 0,0)
+    yield from bps.trigger(rtc6)
+
+# standard shapes
+
+
+
+# For BlueAPI
+
+@device_factory()
+def create_rtc_device() -> Rtc6Eth:
+    r = Rtc6Eth()
+    call_in_bluesky_event_loop(r.connect())
+    return r
+
+def polygon_with_arcs(points: list[JumpOrLineInput | ArcInput]) -> MsgGenerator:
+    rtc6 = create_rtc_device()
+    yield from draw_polygon_with_arcs(rtc6, points)

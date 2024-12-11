@@ -137,6 +137,7 @@ class RtcListOperations(XYCorrectedConnectedSubController):
             bindings = self._conn.get_bindings()
             x, y = self.correct_xy(self.x.get(), self.y.get())
             bindings.add_jump_to(x, y)
+            print("---")
 
     class AddArc(XYCorrectedConnectedSubController):
         x = AttrRW(Int(), group="ListOps")
@@ -149,6 +150,7 @@ class RtcListOperations(XYCorrectedConnectedSubController):
             bindings = self._conn.get_bindings()
             x, y = self.correct_xy(self.x.get(), self.y.get())
             bindings.add_arc_to(x, y, self.angle.get())
+            print("---")
 
     class AddLine(XYCorrectedConnectedSubController):
         x = AttrRW(Int(), group="ListOps")
@@ -159,6 +161,7 @@ class RtcListOperations(XYCorrectedConnectedSubController):
             print("adding line")
             bindings = self._conn.get_bindings()
             bindings.add_line_to(*self.correct_xy(self.x.get(), self.y.get()))
+            print("---")
 
     @command()
     async def init_list(self):
