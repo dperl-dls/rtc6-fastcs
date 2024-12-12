@@ -82,6 +82,9 @@ def go_to_home(rtc6: Rtc6Eth):
 
 # standard shapes
 
+def omega_sphere_100um():
+    pass
+    #todo
 
 
 # For BlueAPI
