@@ -6,9 +6,15 @@ from blueapi.core import MsgGenerator
 from dodal.common.beamlines.beamline_utils import device_factory
 from bluesky.run_engine import call_in_bluesky_event_loop
 
+def convert_um_to_bits(um_in: int) -> int:
+    """RTC operates in bits. Convert um to bits for drawing"""
+    bits_per_um = 33 # estimated
+    return int(um_in * bits_per_um)
 
 def line(rtc6: Rtc6Eth, x: int, y: int):
     """add an instruction to draw a line to x, y"""
+    x = convert_um_to_bits(x)
+    y = convert_um_to_bits(y)
     yield from bps.abs_set(rtc6.list.add_line.x, x, wait=True)
     yield from bps.abs_set(rtc6.list.add_line.y, y, wait=True)
     yield from bps.trigger(rtc6.list.add_line.proc, wait=True)
@@ -16,6 +22,8 @@ def line(rtc6: Rtc6Eth, x: int, y: int):
 
 def jump(rtc6: Rtc6Eth, x: int, y: int):
     """add an instruction to jump to x, y"""
+    x = convert_um_to_bits(x)
+    y = convert_um_to_bits(y)
     yield from bps.abs_set(rtc6.list.add_jump.x, x, wait=True)
     yield from bps.abs_set(rtc6.list.add_jump.y, y, wait=True)
     yield from bps.trigger(rtc6.list.add_jump.proc, wait=True)
@@ -23,6 +31,8 @@ def jump(rtc6: Rtc6Eth, x: int, y: int):
 
 def arc(rtc6: Rtc6Eth, x: int, y: int, angle_deg: float):
     """add an instruction to jump to x, y"""
+    x = convert_um_to_bits(x)
+    y = convert_um_to_bits(y)
     yield from bps.abs_set(rtc6.list.add_arc.x, x, wait=True)
     yield from bps.abs_set(rtc6.list.add_arc.y, y, wait=True)
     yield from bps.abs_set(rtc6.list.add_arc.angle_deg, angle_deg, wait=True)
@@ -82,17 +92,13 @@ def go_to_home(rtc6: Rtc6Eth):
     yield from jump(rtc6, 0, 0)
     yield from bps.trigger(rtc6)
 
-
-# standard shapes
-
-
-def omega_sphere_100um():
-    pass
-    # todo
-
+@bpp.run_decorator()
+def go_to_x_y(rtc6: Rtc6Eth, x: int, y: int):
+    yield from bps.stage(rtc6)
+    yield from jump(rtc6, x, y)
+    yield from bps.trigger(rtc6)
 
 # For BlueAPI
-
 
 @device_factory()
 def create_rtc_device() -> Rtc6Eth:
