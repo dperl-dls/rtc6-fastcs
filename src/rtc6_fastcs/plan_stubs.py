@@ -6,6 +6,7 @@ from blueapi.core import MsgGenerator
 from dodal.common.beamlines.beamline_utils import device_factory
 from bluesky.run_engine import call_in_bluesky_event_loop
 
+
 def line(rtc6: Rtc6Eth, x: int, y: int):
     """add an instruction to draw a line to x, y"""
     yield from bps.abs_set(rtc6.list.add_line.x, x, wait=True)
@@ -44,7 +45,7 @@ def draw_square(rtc6: Rtc6Eth, size: int):
     yield from bps.trigger(rtc6)
 
 
-JumpOrLineInput = tuple[int, int, bool] # x, y, laser_on
+JumpOrLineInput = tuple[int, int, bool]  # x, y, laser_on
 ArcInput = tuple[int, int, float]
 
 
@@ -74,26 +75,31 @@ def draw_polygon_with_arcs(rtc6: Rtc6Eth, points: list[JumpOrLineInput | ArcInpu
             yield from arc(rtc6, *point)
     yield from bps.trigger(rtc6)
 
+
 @bpp.run_decorator()
 def go_to_home(rtc6: Rtc6Eth):
     yield from bps.stage(rtc6)
-    yield from jump(rtc6, 0,0)
+    yield from jump(rtc6, 0, 0)
     yield from bps.trigger(rtc6)
+
 
 # standard shapes
 
+
 def omega_sphere_100um():
     pass
-    #todo
+    # todo
 
 
 # For BlueAPI
+
 
 @device_factory()
 def create_rtc_device() -> Rtc6Eth:
     r = Rtc6Eth()
     call_in_bluesky_event_loop(r.connect())
     return r
+
 
 def polygon_with_arcs(points: list[JumpOrLineInput | ArcInput]) -> MsgGenerator:
     rtc6 = create_rtc_device()
